@@ -88,13 +88,24 @@ class PYS_Sublium_Bridge_Compat {
 			/**
 			 * Whether an order is a subscription renewal.
 			 *
+			 * PixelYourSite calls this WooCommerce Subscriptions helper. The name
+			 * must match so PYS native renewal exclusion can run without WCS.
+			 *
 			 * @param WC_Order|int $order Order.
 			 * @return bool
 			 */
-			function wcs_order_contains_renewal( $order ) {
+			function wcs_order_contains_renewal( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 				$is_renewal = PYS_Sublium_Bridge_Detector::instance()->is_renewal( $order );
 
-				return (bool) apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );
+				/**
+				 * Filter whether an order is a subscription renewal.
+				 *
+				 * @since 1.0.0
+				 *
+				 * @param bool           $is_renewal Whether the order is a renewal.
+				 * @param WC_Order|int   $order      Order.
+				 */
+				return (bool) apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			}
 		}
 
@@ -105,11 +116,19 @@ class PYS_Sublium_Bridge_Compat {
 			 * @param WC_Order|int $order Order.
 			 * @return bool
 			 */
-			function wcs_order_contains_early_renewal( $order ) {
+			function wcs_order_contains_early_renewal( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 				$detector = PYS_Sublium_Bridge_Detector::instance();
 				$is_early = $detector->is_renewal( $order ) && 'manual' === $detector->get_renewal_type( $order );
 
-				return (bool) apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_early, $order );
+				/**
+				 * Filter whether an order is an early renewal.
+				 *
+				 * @since 1.0.0
+				 *
+				 * @param bool           $is_early Whether the order is an early renewal.
+				 * @param WC_Order|int   $order    Order.
+				 */
+				return (bool) apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_early, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			}
 		}
 
@@ -122,7 +141,7 @@ class PYS_Sublium_Bridge_Compat {
 			 * @param WC_Order|int $order Order.
 			 * @return array<int,object>
 			 */
-			function wcs_get_subscriptions_for_renewal_order( $order ) {
+			function wcs_get_subscriptions_for_renewal_order( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 				$detector = PYS_Sublium_Bridge_Detector::instance();
 				$order    = $order instanceof WC_Order ? $order : ( function_exists( 'wc_get_order' ) ? wc_get_order( $order ) : null );
 

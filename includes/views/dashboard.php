@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
+$pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 ?>
 <div class="wrap pysb-dash">
 	<div class="pysb-hero">
@@ -88,37 +88,37 @@ $option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 				</div>
 			<?php else : ?>
 				<ul class="pysb-feed">
-					<?php foreach ( $entries as $entry ) : ?>
+					<?php foreach ( $entries as $pys_sublium_bridge_entry ) : ?>
 						<?php
-						$action   = isset( $entry['action'] ) ? $entry['action'] : '';
-						$channel  = isset( $entry['channel'] ) ? $entry['channel'] : '';
-						$platform = isset( $entry['platform'] ) ? $entry['platform'] : '';
-						$event    = isset( $entry['event'] ) ? $entry['event'] : '';
+						$pys_sublium_bridge_action   = isset( $pys_sublium_bridge_entry['action'] ) ? $pys_sublium_bridge_entry['action'] : '';
+						$pys_sublium_bridge_channel  = isset( $pys_sublium_bridge_entry['channel'] ) ? $pys_sublium_bridge_entry['channel'] : '';
+						$pys_sublium_bridge_platform = isset( $pys_sublium_bridge_entry['platform'] ) ? $pys_sublium_bridge_entry['platform'] : '';
+						$pys_sublium_bridge_event    = isset( $pys_sublium_bridge_entry['event'] ) ? $pys_sublium_bridge_entry['event'] : '';
 						?>
-						<li class="pysb-row" data-action="<?php echo esc_attr( $action ); ?>">
+						<li class="pysb-row" data-action="<?php echo esc_attr( $pys_sublium_bridge_action ); ?>">
 							<div class="pysb-row__main">
 								<div class="pysb-row__meta">
-									<span class="pysb-badge pysb-badge--<?php echo esc_attr( $action ); ?>"><?php echo esc_html( PYS_Sublium_Bridge_Admin::action_label( $action ) ); ?></span>
-									<?php if ( $event ) : ?>
-										<span class="pysb-chip"><?php echo esc_html( $event ); ?></span>
+									<span class="pysb-badge pysb-badge--<?php echo esc_attr( $pys_sublium_bridge_action ); ?>"><?php echo esc_html( PYS_Sublium_Bridge_Admin::action_label( $pys_sublium_bridge_action ) ); ?></span>
+									<?php if ( $pys_sublium_bridge_event ) : ?>
+										<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_event ); ?></span>
 									<?php endif; ?>
-									<?php if ( $channel ) : ?>
-										<span class="pysb-chip"><?php echo esc_html( $channel ); ?></span>
+									<?php if ( $pys_sublium_bridge_channel ) : ?>
+										<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_channel ); ?></span>
 									<?php endif; ?>
-									<?php if ( $platform ) : ?>
-										<span class="pysb-chip pysb-chip--dest"><?php echo esc_html( $platform ); ?></span>
+									<?php if ( $pys_sublium_bridge_platform ) : ?>
+										<span class="pysb-chip pysb-chip--dest"><?php echo esc_html( $pys_sublium_bridge_platform ); ?></span>
 									<?php endif; ?>
 								</div>
-								<p class="pysb-row__message"><?php echo esc_html( PYS_Sublium_Bridge_Logger::format_message( $entry ) ); ?></p>
+								<p class="pysb-row__message"><?php echo esc_html( PYS_Sublium_Bridge_Logger::format_message( $pys_sublium_bridge_entry ) ); ?></p>
 							</div>
 							<div class="pysb-row__side">
-								<?php if ( ! empty( $entry['order_id'] ) ) : ?>
-									<a class="pysb-order" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-orders&action=edit&id=' . (int) $entry['order_id'] ) ); ?>">
-										#<?php echo esc_html( (string) $entry['order_id'] ); ?>
+								<?php if ( ! empty( $pys_sublium_bridge_entry['order_id'] ) ) : ?>
+									<a class="pysb-order" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-orders&action=edit&id=' . (int) $pys_sublium_bridge_entry['order_id'] ) ); ?>">
+										#<?php echo esc_html( (string) $pys_sublium_bridge_entry['order_id'] ); ?>
 									</a>
 								<?php endif; ?>
-								<time datetime="<?php echo esc_attr( $entry['time'] ?? '' ); ?>" title="<?php echo esc_attr( $entry['time'] ?? '' ); ?>">
-									<?php echo esc_html( PYS_Sublium_Bridge_Admin::time_ago( $entry['time'] ?? '' ) ); ?>
+								<time datetime="<?php echo esc_attr( $pys_sublium_bridge_entry['time'] ?? '' ); ?>" title="<?php echo esc_attr( $pys_sublium_bridge_entry['time'] ?? '' ); ?>">
+									<?php echo esc_html( PYS_Sublium_Bridge_Admin::time_ago( $pys_sublium_bridge_entry['time'] ?? '' ) ); ?>
 								</time>
 							</div>
 						</li>
@@ -143,7 +143,7 @@ $option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 					<?php settings_fields( 'pys_sublium_bridge' ); ?>
 
 					<label class="pysb-toggle">
-						<input type="checkbox" name="<?php echo esc_attr( $option_key ); ?>[exclude_auto_renewals]" value="1" <?php checked( ! empty( $settings['exclude_auto_renewals'] ) ); ?> />
+						<input type="checkbox" name="<?php echo esc_attr( $pys_sublium_bridge_option_key ); ?>[exclude_auto_renewals]" value="1" <?php checked( ! empty( $settings['exclude_auto_renewals'] ) ); ?> />
 						<span>
 							<strong><?php esc_html_e( 'Block automatic renewals', 'pys-sublium-bridge' ); ?></strong>
 							<span><?php esc_html_e( 'Do not send Purchase when Sublium charges a scheduled renewal.', 'pys-sublium-bridge' ); ?></span>
@@ -151,7 +151,7 @@ $option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 					</label>
 
 					<label class="pysb-toggle">
-						<input type="checkbox" name="<?php echo esc_attr( $option_key ); ?>[exclude_manual_renewals]" value="1" <?php checked( ! empty( $settings['exclude_manual_renewals'] ) ); ?> />
+						<input type="checkbox" name="<?php echo esc_attr( $pys_sublium_bridge_option_key ); ?>[exclude_manual_renewals]" value="1" <?php checked( ! empty( $settings['exclude_manual_renewals'] ) ); ?> />
 						<span>
 							<strong><?php esc_html_e( 'Block manual / early renewals', 'pys-sublium-bridge' ); ?></strong>
 							<span><?php esc_html_e( 'Do not send Purchase for customer-initiated or manual renewals.', 'pys-sublium-bridge' ); ?></span>
@@ -159,7 +159,7 @@ $option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 					</label>
 
 					<label class="pysb-toggle">
-						<input type="checkbox" name="<?php echo esc_attr( $option_key ); ?>[send_first_time_buyer]" value="1" <?php checked( ! empty( $settings['send_first_time_buyer'] ) ); ?> />
+						<input type="checkbox" name="<?php echo esc_attr( $pys_sublium_bridge_option_key ); ?>[send_first_time_buyer]" value="1" <?php checked( ! empty( $settings['send_first_time_buyer'] ) ); ?> />
 						<span>
 							<strong><?php esc_html_e( 'Send FirstTimeBuyer on first sale', 'pys-sublium-bridge' ); ?></strong>
 							<span><?php esc_html_e( 'Fires PixelYourSite’s FirstTimeBuyer event with Purchase. Never on renewals.', 'pys-sublium-bridge' ); ?></span>
@@ -167,7 +167,7 @@ $option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 					</label>
 
 					<label class="pysb-toggle">
-						<input type="checkbox" name="<?php echo esc_attr( $option_key ); ?>[logging_enabled]" value="1" <?php checked( ! empty( $settings['logging_enabled'] ) ); ?> />
+						<input type="checkbox" name="<?php echo esc_attr( $pys_sublium_bridge_option_key ); ?>[logging_enabled]" value="1" <?php checked( ! empty( $settings['logging_enabled'] ) ); ?> />
 						<span>
 							<strong><?php esc_html_e( 'Keep this activity log', 'pys-sublium-bridge' ); ?></strong>
 							<span><?php esc_html_e( 'Last 150 decisions. Also written to WooCommerce → Status → Logs.', 'pys-sublium-bridge' ); ?></span>

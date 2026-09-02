@@ -2,10 +2,11 @@
 /**
  * Plugin Name:       PYS Sublium Bridge
  * Plugin URI:        https://betatech.co/
- * Description:       Lets PixelYourSite Pro exclude Sublium subscription renewals from Purchase events, send FirstTimeBuyer on a first sale, and log what was sent or blocked.
+ * Description:       Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked.
  * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
+ * Requires Plugins:  woocommerce
  * Author:            Betatech
  * Author URI:        https://betatech.co/
  * License:           GPL-3.0-or-later

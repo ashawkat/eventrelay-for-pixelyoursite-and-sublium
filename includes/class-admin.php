@@ -229,7 +229,7 @@ class PYS_Sublium_Bridge_Admin {
 		}
 
 		if ( ! PYS_Sublium_Bridge_Plugin::is_sublium_active() ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'Sublium Subscriptions is not detected on this site. The bridge will still load, but renewal detection needs Sublium on the Tikva site.', 'pys-sublium-bridge' ) . '</p></div>';
+			echo '<div class="notice notice-warning"><p>' . esc_html__( 'Sublium Subscriptions is not detected on this site. The bridge will still load, but renewal detection needs Sublium to be active.', 'pys-sublium-bridge' ) . '</p></div>';
 		}
 	}
 
@@ -279,7 +279,8 @@ class PYS_Sublium_Bridge_Admin {
 		$pys_ok   = PYS_Sublium_Bridge_Plugin::is_pys_active();
 		$sub_ok   = PYS_Sublium_Bridge_Plugin::is_sublium_active();
 
-		if ( ! empty( $_GET['log_cleared'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$log_cleared = isset( $_GET['log_cleared'] ) ? sanitize_text_field( wp_unslash( $_GET['log_cleared'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( '1' === $log_cleared ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Activity log cleared.', 'pys-sublium-bridge' ) . '</p></div>';
 		}
 

@@ -2,6 +2,8 @@
 
 WordPress plugin that connects [PixelYourSite Pro](https://www.pixelyoursite.com/) to [Sublium Subscriptions](https://sublium.com/). It stops subscription **renewals** from being sent as **Purchase** events, sends PixelYourSite’s **FirstTimeBuyer** event on a customer’s first sale, and shows every decision on an admin dashboard.
 
+The WordPress.org plugin directory uses `readme.txt`. This file is the GitHub overview.
+
 **GitHub repo description (paste this):**
 
 > WordPress bridge that stops PixelYourSite Pro from counting Sublium subscription renewals as Purchase events, sends FirstTimeBuyer on first sale, and logs what was sent or blocked.
@@ -42,7 +44,7 @@ That inflates conversion data. This plugin is a small bridge: it does not fork P
 
 ## Install
 
-1. Copy this folder into `wp-content/plugins/pys-sublium-bridge` (rename it from `Untitled` if needed).
+1. Copy this folder into `wp-content/plugins/pys-sublium-bridge`.
 2. Activate **PYS Sublium Bridge**.
 3. Open **PYS Bridge** in the WordPress admin menu.
 

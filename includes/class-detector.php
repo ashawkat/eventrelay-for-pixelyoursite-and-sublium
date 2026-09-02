@@ -383,8 +383,7 @@ class PYS_Sublium_Bridge_Detector {
 		$email   = $order->get_billing_email();
 
 		$args = array(
-			'limit'        => 1,
-			'exclude'      => array( $order->get_id() ),
+			'limit'        => 2,
 			'status'       => array( 'processing', 'completed', 'on-hold' ),
 			'return'       => 'ids',
 			'date_created' => '>' . ( time() - ( DAY_IN_SECONDS * 540 ) ),
@@ -398,7 +397,8 @@ class PYS_Sublium_Bridge_Detector {
 			return false;
 		}
 
-		$found = wc_get_orders( $args );
+		$found = array_map( 'absint', (array) wc_get_orders( $args ) );
+		$found = array_diff( $found, array( (int) $order->get_id() ) );
 
 		return ! empty( $found );
 	}
