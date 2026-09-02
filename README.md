@@ -4,14 +4,6 @@ WordPress plugin that connects [PixelYourSite Pro](https://www.pixelyoursite.com
 
 The WordPress.org plugin directory uses `readme.txt`. This file is the GitHub overview.
 
-**GitHub repo description (paste this):**
-
-> WordPress bridge that stops PixelYourSite Pro from counting Sublium subscription renewals as Purchase events, sends FirstTimeBuyer on first sale, and logs what was sent or blocked.
-
-**Suggested topics:** `wordpress` `woocommerce` `pixelyoursite` `sublium` `subscriptions` `meta-ads` `ga4`
-
----
-
 ## Why it exists
 
 PixelYourSite Pro only enables “Exclude renewals from the Purchase event” when official **WooCommerce Subscriptions** is installed. Stores that use **Sublium** cannot turn those checkboxes on, so every automatic renewal is sent to Meta, Google, TikTok, OpenAI, and other connected pixels as a new Purchase.
