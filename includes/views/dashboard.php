@@ -6,6 +6,7 @@
  *
  * @var array<string,mixed> $settings Settings.
  * @var array<int,array<string,mixed>> $entries Log rows newest first.
+ * @var array<int,array<string,mixed>> $groups Entries grouped by order.
  * @var array<string,int> $stats Counts.
  * @var bool $pys_ok PixelYourSite active.
  * @var bool $sub_ok Sublium active.
@@ -65,7 +66,7 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 			<div class="pysb-card__head">
 				<div>
 					<h2><?php esc_html_e( 'Activity', 'pys-sublium-bridge' ); ?></h2>
-					<p><?php esc_html_e( 'Newest first. Filter to see only what you care about.', 'pys-sublium-bridge' ); ?></p>
+					<p><?php esc_html_e( 'Grouped by order, newest first. Filter to see only what you care about.', 'pys-sublium-bridge' ); ?></p>
 				</div>
 				<form method="post" class="pysb-clear">
 					<?php wp_nonce_field( 'pys_sublium_bridge_clear_log' ); ?>
@@ -81,51 +82,79 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 				<button type="button" class="pysb-filter" data-filter="blocked"><?php esc_html_e( 'Blocked', 'pys-sublium-bridge' ); ?></button>
 			</div>
 
-			<?php if ( empty( $entries ) ) : ?>
+			<?php if ( empty( $groups ) ) : ?>
 				<div class="pysb-empty">
 					<strong><?php esc_html_e( 'Nothing logged yet', 'pys-sublium-bridge' ); ?></strong>
 					<p><?php esc_html_e( 'Place a first-time order or wait for a Sublium renewal. This feed will show exactly what was sent to Meta, Google, TikTok, and OpenAI.', 'pys-sublium-bridge' ); ?></p>
 				</div>
 			<?php else : ?>
 				<ul class="pysb-feed">
-					<?php foreach ( $entries as $pys_sublium_bridge_entry ) : ?>
+					<?php foreach ( $groups as $pys_sublium_bridge_group ) : ?>
 						<?php
-						$pys_sublium_bridge_action   = isset( $pys_sublium_bridge_entry['action'] ) ? $pys_sublium_bridge_entry['action'] : '';
-						$pys_sublium_bridge_channel  = isset( $pys_sublium_bridge_entry['channel'] ) ? $pys_sublium_bridge_entry['channel'] : '';
-						$pys_sublium_bridge_platform = isset( $pys_sublium_bridge_entry['platform'] ) ? $pys_sublium_bridge_entry['platform'] : '';
-						$pys_sublium_bridge_event    = isset( $pys_sublium_bridge_entry['event'] ) ? $pys_sublium_bridge_entry['event'] : '';
+						$pys_sublium_bridge_order_id = isset( $pys_sublium_bridge_group['order_id'] ) ? (int) $pys_sublium_bridge_group['order_id'] : 0;
+						$pys_sublium_bridge_actions  = ! empty( $pys_sublium_bridge_group['actions'] ) ? array_keys( $pys_sublium_bridge_group['actions'] ) : array();
+						$pys_sublium_bridge_count    = count( $pys_sublium_bridge_group['entries'] );
 						?>
-						<li class="pysb-row" data-action="<?php echo esc_attr( $pys_sublium_bridge_action ); ?>">
-							<div class="pysb-row__main">
-								<div class="pysb-row__meta">
-									<span class="pysb-badge pysb-badge--<?php echo esc_attr( $pys_sublium_bridge_action ); ?>"><?php echo esc_html( PYS_Sublium_Bridge_Admin::action_label( $pys_sublium_bridge_action ) ); ?></span>
-									<?php if ( $pys_sublium_bridge_event ) : ?>
-										<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_event ); ?></span>
-									<?php endif; ?>
-									<?php if ( $pys_sublium_bridge_channel ) : ?>
-										<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_channel ); ?></span>
-									<?php endif; ?>
-									<?php if ( $pys_sublium_bridge_platform ) : ?>
-										<span class="pysb-chip pysb-chip--dest"><?php echo esc_html( $pys_sublium_bridge_platform ); ?></span>
-									<?php endif; ?>
+						<li class="pysb-group" data-actions="<?php echo esc_attr( implode( ' ', $pys_sublium_bridge_actions ) ); ?>">
+							<div class="pysb-group__head">
+								<div class="pysb-group__main">
+									<div class="pysb-group__title">
+										<?php if ( $pys_sublium_bridge_order_id ) : ?>
+											<a class="pysb-order" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-orders&action=edit&id=' . $pys_sublium_bridge_order_id ) ); ?>">
+												#<?php echo esc_html( (string) $pys_sublium_bridge_order_id ); ?>
+											</a>
+										<?php else : ?>
+											<span class="pysb-order"><?php esc_html_e( 'Unknown order', 'pys-sublium-bridge' ); ?></span>
+										<?php endif; ?>
+										<?php foreach ( $pys_sublium_bridge_actions as $pys_sublium_bridge_action ) : ?>
+											<span class="pysb-badge pysb-badge--<?php echo esc_attr( $pys_sublium_bridge_action ); ?>"><?php echo esc_html( PYS_Sublium_Bridge_Admin::action_label( $pys_sublium_bridge_action ) ); ?></span>
+										<?php endforeach; ?>
+									</div>
+									<p class="pysb-group__summary"><?php echo esc_html( PYS_Sublium_Bridge_Admin::group_summary( $pys_sublium_bridge_group ) ); ?></p>
 								</div>
-								<p class="pysb-row__message"><?php echo esc_html( PYS_Sublium_Bridge_Logger::format_message( $pys_sublium_bridge_entry ) ); ?></p>
+								<div class="pysb-group__side">
+									<span class="pysb-group__count">
+										<?php
+										printf(
+											/* translators: %d: number of destinations */
+											esc_html( _n( '%d destination', '%d destinations', $pys_sublium_bridge_count, 'pys-sublium-bridge' ) ),
+											(int) $pys_sublium_bridge_count
+										);
+										?>
+									</span>
+									<time datetime="<?php echo esc_attr( $pys_sublium_bridge_group['time'] ?? '' ); ?>" title="<?php echo esc_attr( $pys_sublium_bridge_group['time'] ?? '' ); ?>">
+										<?php echo esc_html( PYS_Sublium_Bridge_Admin::time_ago( $pys_sublium_bridge_group['time'] ?? '' ) ); ?>
+									</time>
+								</div>
 							</div>
-							<div class="pysb-row__side">
-								<?php if ( ! empty( $pys_sublium_bridge_entry['order_id'] ) ) : ?>
-									<a class="pysb-order" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-orders&action=edit&id=' . (int) $pys_sublium_bridge_entry['order_id'] ) ); ?>">
-										#<?php echo esc_html( (string) $pys_sublium_bridge_entry['order_id'] ); ?>
-									</a>
-								<?php endif; ?>
-								<time datetime="<?php echo esc_attr( $pys_sublium_bridge_entry['time'] ?? '' ); ?>" title="<?php echo esc_attr( $pys_sublium_bridge_entry['time'] ?? '' ); ?>">
-									<?php echo esc_html( PYS_Sublium_Bridge_Admin::time_ago( $pys_sublium_bridge_entry['time'] ?? '' ) ); ?>
-								</time>
-							</div>
+							<ul class="pysb-group__events">
+								<?php foreach ( $pys_sublium_bridge_group['entries'] as $pys_sublium_bridge_entry ) : ?>
+									<?php
+									$pys_sublium_bridge_row_action = isset( $pys_sublium_bridge_entry['action'] ) ? $pys_sublium_bridge_entry['action'] : '';
+									$pys_sublium_bridge_channel    = isset( $pys_sublium_bridge_entry['channel'] ) ? $pys_sublium_bridge_entry['channel'] : '';
+									$pys_sublium_bridge_platform   = isset( $pys_sublium_bridge_entry['platform'] ) ? $pys_sublium_bridge_entry['platform'] : '';
+									$pys_sublium_bridge_event      = isset( $pys_sublium_bridge_entry['event'] ) ? $pys_sublium_bridge_entry['event'] : '';
+									?>
+									<li class="pysb-row" data-action="<?php echo esc_attr( $pys_sublium_bridge_row_action ); ?>">
+										<div class="pysb-row__meta">
+											<?php if ( $pys_sublium_bridge_event ) : ?>
+												<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_event ); ?></span>
+											<?php endif; ?>
+											<?php if ( $pys_sublium_bridge_channel ) : ?>
+												<span class="pysb-chip"><?php echo esc_html( $pys_sublium_bridge_channel ); ?></span>
+											<?php endif; ?>
+											<?php if ( $pys_sublium_bridge_platform ) : ?>
+												<span class="pysb-chip pysb-chip--dest"><?php echo esc_html( $pys_sublium_bridge_platform ); ?></span>
+											<?php endif; ?>
+										</div>
+									</li>
+								<?php endforeach; ?>
+							</ul>
 						</li>
 					<?php endforeach; ?>
 				</ul>
 				<p class="pysb-empty is-hidden" data-empty-filter>
-					<?php esc_html_e( 'No rows match this filter.', 'pys-sublium-bridge' ); ?>
+					<?php esc_html_e( 'No orders match this filter.', 'pys-sublium-bridge' ); ?>
 				</p>
 			<?php endif; ?>
 		</section>

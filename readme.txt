@@ -1,10 +1,10 @@
 === PYS Sublium Bridge ===
-Contributors: ashawkat
+Contributors: betatech, adnanshawkat
 Tags: woocommerce, subscriptions, tracking, facebook, analytics
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -64,6 +64,9 @@ No. The first order that creates the subscription is never treated as a renewal.
 Open **PYS Bridge** in the admin menu. The last 150 decisions are also written to WooCommerce → Status → Logs (`pys-sublium-bridge`).
 
 == Changelog ==
+
+= 1.2.1 =
+* Group the activity log by order so destinations sit under one order card
 
 = 1.2.0 =
 * Dashboard for sent and blocked events

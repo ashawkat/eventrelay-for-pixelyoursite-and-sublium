@@ -105,6 +105,13 @@ assets/
   dashboard.js
 ```
 
+## WordPress.org assets
+
+Icon and banner files live in `.wordpress-org/`. They are **not** part of the plugin zip. After the plugin is approved, upload them to the SVN `assets/` folder:
+
+- `icon-256x256.png` / `icon-128x128.png`
+- `banner-1544x500.png` / `banner-772x250.png`
+
 ## License
 
 GPL-3.0-or-later

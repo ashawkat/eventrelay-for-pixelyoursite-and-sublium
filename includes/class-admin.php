@@ -275,6 +275,7 @@ class PYS_Sublium_Bridge_Admin {
 
 		$settings = wp_parse_args( get_option( PYS_Sublium_Bridge_Plugin::OPTION_KEY, array() ), PYS_Sublium_Bridge_Plugin::default_settings() );
 		$entries  = array_reverse( PYS_Sublium_Bridge_Logger::instance()->get_entries() );
+		$groups   = PYS_Sublium_Bridge_Logger::group_entries_by_order( $entries );
 		$stats    = PYS_Sublium_Bridge_Logger::instance()->get_stats();
 		$pys_ok   = PYS_Sublium_Bridge_Plugin::is_pys_active();
 		$sub_ok   = PYS_Sublium_Bridge_Plugin::is_sublium_active();
@@ -285,6 +286,28 @@ class PYS_Sublium_Bridge_Admin {
 		}
 
 		require PYS_SUBLIUM_BRIDGE_PATH . 'includes/views/dashboard.php';
+	}
+
+	/**
+	 * Summary line for a grouped order.
+	 *
+	 * @param array<string,mixed> $group Grouped log rows.
+	 * @return string
+	 */
+	public static function group_summary( $group ) {
+		if ( ! empty( $group['renewal'] ) && ! empty( $group['actions']['blocked'] ) ) {
+			return __( 'Sublium renewal. Purchase was blocked on every connected pixel.', 'pys-sublium-bridge' );
+		}
+
+		if ( ! empty( $group['first_time'] ) ) {
+			return __( 'First-time sale. Purchase was allowed on the destinations below.', 'pys-sublium-bridge' );
+		}
+
+		if ( ! empty( $group['actions']['allowed'] ) ) {
+			return __( 'Not a renewal. Purchase was allowed on the destinations below.', 'pys-sublium-bridge' );
+		}
+
+		return __( 'Tracking decisions for this order.', 'pys-sublium-bridge' );
 	}
 
 	/**

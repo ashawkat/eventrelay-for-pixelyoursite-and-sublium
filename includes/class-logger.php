@@ -133,6 +133,48 @@ class PYS_Sublium_Bridge_Logger {
 	}
 
 	/**
+	 * Group log rows by order, newest orders first.
+	 *
+	 * @param array<int,array<string,mixed>> $entries Rows newest first.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function group_entries_by_order( $entries ) {
+		$groups = array();
+
+		foreach ( $entries as $entry ) {
+			$order_id = ! empty( $entry['order_id'] ) ? (int) $entry['order_id'] : 0;
+			$key      = $order_id ? (string) $order_id : 'none-' . md5( wp_json_encode( $entry ) );
+
+			if ( ! isset( $groups[ $key ] ) ) {
+				$groups[ $key ] = array(
+					'order_id'   => $order_id,
+					'time'       => isset( $entry['time'] ) ? $entry['time'] : '',
+					'entries'    => array(),
+					'actions'    => array(),
+					'first_time' => false,
+					'renewal'    => false,
+				);
+			}
+
+			$groups[ $key ]['entries'][] = $entry;
+
+			if ( ! empty( $entry['action'] ) ) {
+				$groups[ $key ]['actions'][ $entry['action'] ] = true;
+			}
+
+			if ( ! empty( $entry['first_time'] ) ) {
+				$groups[ $key ]['first_time'] = true;
+			}
+
+			if ( ! empty( $entry['renewal'] ) ) {
+				$groups[ $key ]['renewal'] = true;
+			}
+		}
+
+		return array_values( $groups );
+	}
+
+	/**
 	 * Counts used by the dashboard cards.
 	 *
 	 * @return array<string,int>
