@@ -1,0 +1,325 @@
+.pysb-dash {
+	max-width: 1180px;
+	margin: 16px 20px 32px 0;
+}
+
+.pysb-hero {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 24px;
+	margin-bottom: 20px;
+	padding: 24px 28px;
+	background: #111827;
+	border-radius: 16px;
+	color: #f9fafb;
+	box-shadow: 0 12px 30px rgba(17, 24, 39, 0.18);
+}
+
+.pysb-hero h1 {
+	margin: 4px 0 8px;
+	color: #fff;
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.pysb-kicker {
+	margin: 0;
+	color: #93c5fd;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.pysb-lead {
+	margin: 0;
+	max-width: 560px;
+	color: #d1d5db;
+	font-size: 14px;
+}
+
+.pysb-status {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.pysb-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 6px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pysb-pill.is-on {
+	background: #052e16;
+	color: #86efac;
+}
+
+.pysb-pill.is-off {
+	background: #3f1d1d;
+	color: #fecaca;
+}
+
+.pysb-stats {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.pysb-stat {
+	padding: 18px 18px 16px;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+}
+
+.pysb-stat__label {
+	display: block;
+	color: #6b7280;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.pysb-stat__value {
+	display: block;
+	margin: 8px 0 4px;
+	color: #111827;
+	font-size: 32px;
+	line-height: 1;
+}
+
+.pysb-stat__hint {
+	color: #6b7280;
+	font-size: 12px;
+}
+
+.pysb-stat--block .pysb-stat__value {
+	color: #b91c1c;
+}
+
+.pysb-stat--first .pysb-stat__value {
+	color: #1d4ed8;
+}
+
+.pysb-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+	gap: 16px;
+	align-items: start;
+}
+
+.pysb-card {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 20px;
+}
+
+.pysb-card__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.pysb-card h2 {
+	margin: 0 0 4px;
+	font-size: 18px;
+}
+
+.pysb-card p {
+	margin: 0;
+	color: #6b7280;
+}
+
+.pysb-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 14px;
+}
+
+.pysb-filter {
+	border: 1px solid #d1d5db;
+	background: #fff;
+	border-radius: 999px;
+	padding: 5px 12px;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.pysb-filter.is-active {
+	background: #111827;
+	border-color: #111827;
+	color: #fff;
+}
+
+.pysb-feed {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pysb-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 0;
+	border-top: 1px solid #f3f4f6;
+}
+
+.pysb-row:first-child {
+	border-top: 0;
+}
+
+.pysb-row__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.pysb-row__message {
+	margin: 0;
+	color: #111827;
+	line-height: 1.5;
+}
+
+.pysb-row__side {
+	flex: 0 0 auto;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.pysb-row__side time {
+	display: block;
+	margin-top: 4px;
+	color: #6b7280;
+	font-size: 12px;
+}
+
+.pysb-order {
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.pysb-badge,
+.pysb-chip {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+.pysb-badge--blocked {
+	background: #fef2f2;
+	color: #991b1b;
+}
+
+.pysb-badge--allowed {
+	background: #ecfdf5;
+	color: #047857;
+}
+
+.pysb-badge--sent {
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
+.pysb-badge--skipped {
+	background: #f3f4f6;
+	color: #4b5563;
+}
+
+.pysb-chip {
+	background: #f3f4f6;
+	color: #374151;
+	font-weight: 500;
+}
+
+.pysb-chip--dest {
+	background: #eef2ff;
+	color: #3730a3;
+}
+
+.pysb-empty {
+	padding: 28px 8px;
+	text-align: center;
+	color: #6b7280;
+}
+
+.pysb-empty.is-hidden {
+	display: none;
+}
+
+.pysb-settings {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.pysb-toggle {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	padding: 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #f9fafb;
+}
+
+.pysb-toggle input {
+	margin-top: 3px;
+}
+
+.pysb-toggle strong,
+.pysb-toggle span span {
+	display: block;
+}
+
+.pysb-toggle span span {
+	margin-top: 3px;
+	color: #6b7280;
+	font-size: 12px;
+}
+
+.pysb-card--help ol {
+	margin: 12px 0 0 18px;
+}
+
+.pysb-card--help li {
+	margin-bottom: 8px;
+}
+
+@media (max-width: 1100px) {
+	.pysb-stats,
+	.pysb-grid,
+	.pysb-hero {
+		display: block;
+	}
+
+	.pysb-stat,
+	.pysb-card,
+	.pysb-status {
+		margin-top: 12px;
+	}
+
+	.pysb-row {
+		flex-direction: column;
+	}
+
+	.pysb-row__side {
+		text-align: left;
+	}
+}
