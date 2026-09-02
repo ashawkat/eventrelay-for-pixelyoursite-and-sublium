@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:       PYS Sublium Bridge
- * Plugin URI:        https://betatech.co/
  * Description:       Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked.
  * Version:           1.2.1
  * Requires at least: 6.0
