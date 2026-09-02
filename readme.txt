@@ -16,6 +16,8 @@ PixelYourSite Pro only enables “Exclude renewals from the Purchase event” wh
 
 This plugin is a small bridge. It does not fork PixelYourSite. It detects Sublium renewals and blocks those Purchase events using PixelYourSite’s own filters and APIs.
 
+This is a third-party integration. It is not affiliated with, endorsed by, or an official product of PixelYourSite or Sublium.
+
 = What it does =
 
 * Blocks Purchase (browser and Conversion API / Measurement Protocol) for Sublium automatic and/or manual renewals
