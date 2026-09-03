@@ -4,6 +4,7 @@ Tags: woocommerce, subscriptions, tracking, facebook, analytics
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
+Requires Plugins: woocommerce, pixelyoursite-pro, sublium-subscriptions-for-woocommerce
 Stable tag: 1.2.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -34,11 +35,13 @@ This is a third-party integration. It is not affiliated with, endorsed by, or an
 
 = Requirements =
 
+These are also declared in the plugin header (`Requires Plugins`) so WordPress will not activate this plugin unless they are installed:
+
 * WordPress 6.0 or later
 * PHP 7.4 or later
 * WooCommerce 7.0 or later
-* PixelYourSite Pro
-* Sublium Subscriptions
+* PixelYourSite Pro (`pixelyoursite-pro`)
+* Sublium Subscriptions (`sublium-subscriptions-for-woocommerce`)
 
 == Installation ==
 
@@ -52,6 +55,10 @@ This is a third-party integration. It is not affiliated with, endorsed by, or an
 = Does this replace PixelYourSite? =
 
 No. It only bridges PixelYourSite Pro to Sublium Subscriptions so renewal exclusion and FirstTimeBuyer work.
+
+= Which plugins must be installed? =
+
+WooCommerce, PixelYourSite Pro, and Sublium Subscriptions. WordPress reads these from the `Requires Plugins` header. If any of them is missing, this plugin will not activate.
 
 = Do I need official WooCommerce Subscriptions? =
 

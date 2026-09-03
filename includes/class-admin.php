@@ -56,12 +56,21 @@ class PYS_Sublium_Bridge_Admin {
 		add_menu_page(
 			__( 'PYS Sublium Bridge', 'pys-sublium-bridge' ),
 			__( 'PYS Bridge', 'pys-sublium-bridge' ),
-			'manage_woocommerce',
+			$this->settings_capability(),
 			'pys-sublium-bridge',
 			array( $this, 'render_settings_page' ),
 			'dashicons-chart-area',
 			56
 		);
+	}
+
+	/**
+	 * Capability for the settings screen.
+	 *
+	 * @return string
+	 */
+	private function settings_capability() {
+		return PYS_Sublium_Bridge_Plugin::is_woocommerce_active() ? 'manage_woocommerce' : 'activate_plugins';
 	}
 
 	/**
@@ -170,7 +179,7 @@ class PYS_Sublium_Bridge_Admin {
 			return;
 		}
 
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( $this->settings_capability() ) ) {
 			return;
 		}
 
@@ -215,22 +224,30 @@ class PYS_Sublium_Bridge_Admin {
 	 * @return void
 	 */
 	public function maybe_show_dependency_notice() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( $this->settings_capability() ) && ! current_user_can( 'activate_plugins' ) ) {
 			return;
 		}
 
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || 'toplevel_page_pys-sublium-bridge' !== $screen->id ) {
+		$allowed = array( 'toplevel_page_pys-sublium-bridge', 'plugins' );
+		if ( ! $screen || ! in_array( $screen->id, $allowed, true ) ) {
 			return;
 		}
 
-		if ( ! PYS_Sublium_Bridge_Plugin::is_pys_active() ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'PixelYourSite Pro is not active. Activate it so this bridge can block renewal Purchase events.', 'pys-sublium-bridge' ) . '</p></div>';
+		$missing = PYS_Sublium_Bridge_Plugin::get_missing_required_plugins();
+		if ( empty( $missing ) ) {
+			return;
 		}
 
-		if ( ! PYS_Sublium_Bridge_Plugin::is_sublium_active() ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'Sublium Subscriptions is not detected on this site. The bridge will still load, but renewal detection needs Sublium to be active.', 'pys-sublium-bridge' ) . '</p></div>';
-		}
+		echo '<div class="notice notice-error"><p>';
+		echo esc_html(
+			sprintf(
+				/* translators: %s: comma-separated plugin names */
+				__( 'PYS Sublium Bridge requires these plugins to be installed and active: %s.', 'pys-sublium-bridge' ),
+				implode( ', ', $missing )
+			)
+		);
+		echo '</p></div>';
 	}
 
 	/**
@@ -269,7 +286,7 @@ class PYS_Sublium_Bridge_Admin {
 	 * @return void
 	 */
 	public function render_settings_page() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( $this->settings_capability() ) ) {
 			return;
 		}
 
@@ -277,15 +294,46 @@ class PYS_Sublium_Bridge_Admin {
 		$pys_ok   = PYS_Sublium_Bridge_Plugin::is_pys_active();
 		$sub_ok   = PYS_Sublium_Bridge_Plugin::is_sublium_active();
 		$inspect  = null;
+		$entries  = array();
+		$groups   = array();
+		$stats    = array(
+			'purchases_sent'   => 0,
+			'renewals_blocked' => 0,
+			'first_time_sent'  => 0,
+			'today'            => 0,
+		);
 
-		PYS_Sublium_Bridge_Detector::instance()->backfill_recent_renewals();
-		$entries = array_reverse( PYS_Sublium_Bridge_Logger::instance()->get_entries() );
-		$groups  = PYS_Sublium_Bridge_Logger::group_entries_by_order( $entries );
-		$stats   = PYS_Sublium_Bridge_Logger::instance()->get_stats();
+		$filter     = 'all';
+		$pagination = array(
+			'groups'   => array(),
+			'page'     => 1,
+			'pages'    => 1,
+			'total'    => 0,
+			'per_page' => 10,
+			'from'     => 0,
+			'to'       => 0,
+		);
 
-		$inspect_id = isset( $_GET['pys_sublium_bridge_order'] ) ? absint( wp_unslash( $_GET['pys_sublium_bridge_order'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( $inspect_id ) {
-			$inspect = PYS_Sublium_Bridge_Detector::instance()->inspect( $inspect_id );
+		if ( class_exists( 'PYS_Sublium_Bridge_Detector' ) && class_exists( 'PYS_Sublium_Bridge_Logger' ) ) {
+			PYS_Sublium_Bridge_Detector::instance()->backfill_recent_renewals();
+			$entries = array_reverse( PYS_Sublium_Bridge_Logger::instance()->get_entries() );
+			$groups  = PYS_Sublium_Bridge_Logger::group_entries_by_order( $entries );
+			$stats   = PYS_Sublium_Bridge_Logger::instance()->get_stats();
+
+			$filter = isset( $_GET['pys_sublium_bridge_filter'] ) ? sanitize_key( wp_unslash( $_GET['pys_sublium_bridge_filter'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! in_array( $filter, array( 'all', 'allowed', 'sent', 'blocked' ), true ) ) {
+				$filter = 'all';
+			}
+
+			$page       = isset( $_GET['pysb_paged'] ) ? absint( wp_unslash( $_GET['pysb_paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filtered   = PYS_Sublium_Bridge_Logger::filter_groups_by_action( $groups, $filter );
+			$pagination = PYS_Sublium_Bridge_Logger::paginate_groups( $filtered, $page, 10 );
+			$groups     = $pagination['groups'];
+
+			$inspect_id = isset( $_GET['pys_sublium_bridge_order'] ) ? absint( wp_unslash( $_GET['pys_sublium_bridge_order'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $inspect_id ) {
+				$inspect = PYS_Sublium_Bridge_Detector::instance()->inspect( $inspect_id );
+			}
 		}
 
 		$log_cleared = isset( $_GET['log_cleared'] ) ? sanitize_text_field( wp_unslash( $_GET['log_cleared'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -316,6 +364,69 @@ class PYS_Sublium_Bridge_Admin {
 		}
 
 		return __( 'Tracking decisions for this order.', 'pys-sublium-bridge' );
+	}
+
+	/**
+	 * Dashboard URL that keeps the current filter / order checker.
+	 *
+	 * @param array<string,mixed> $args Query args to merge. Pass null to drop a key.
+	 * @return string
+	 */
+	public static function dashboard_url( $args = array() ) {
+		$query = array( 'page' => 'pys-sublium-bridge' );
+
+		$filter = isset( $_GET['pys_sublium_bridge_filter'] ) ? sanitize_key( wp_unslash( $_GET['pys_sublium_bridge_filter'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( in_array( $filter, array( 'allowed', 'sent', 'blocked' ), true ) ) {
+			$query['pys_sublium_bridge_filter'] = $filter;
+		}
+
+		$order_id = isset( $_GET['pys_sublium_bridge_order'] ) ? absint( wp_unslash( $_GET['pys_sublium_bridge_order'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $order_id ) {
+			$query['pys_sublium_bridge_order'] = $order_id;
+		}
+
+		$query = array_merge( $query, $args );
+
+		foreach ( $query as $key => $value ) {
+			if ( null === $value || '' === $value ) {
+				unset( $query[ $key ] );
+			}
+		}
+
+		return add_query_arg( $query, admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * HTML pagination for the activity feed.
+	 *
+	 * @param array<string,mixed> $pagination Page slice.
+	 * @return string
+	 */
+	public static function pagination_html( $pagination ) {
+		$pages = isset( $pagination['pages'] ) ? (int) $pagination['pages'] : 1;
+		if ( $pages < 2 ) {
+			return '';
+		}
+
+		$current = isset( $pagination['page'] ) ? (int) $pagination['page'] : 1;
+		$base    = self::dashboard_url( array( 'pysb_paged' => 999999999 ) ) . '#pysb-activity';
+		$base    = str_replace( '999999999', '%#%', esc_url_raw( $base ) );
+
+		$links = paginate_links(
+			array(
+				'base'      => $base,
+				'format'    => '',
+				'current'   => $current,
+				'total'     => $pages,
+				'type'      => 'list',
+				'end_size'  => 1,
+				'mid_size'  => 1,
+				'prev_text' => '&laquo;',
+				'next_text' => '&raquo;',
+			)
+		);
+
+		return is_string( $links ) ? $links : '';
 	}
 
 	/**

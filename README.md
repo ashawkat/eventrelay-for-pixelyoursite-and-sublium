@@ -30,11 +30,15 @@ That inflates conversion data. This plugin is a small bridge: it does not fork P
 
 ## Requirements
 
+Declared in the plugin header and `readme.txt` as `Requires Plugins`:
+
 - WordPress 6.0+
 - PHP 7.4+
-- WooCommerce 7.0+
-- PixelYourSite Pro
-- Sublium Subscriptions (on the live site)
+- WooCommerce 7.0+ (`woocommerce`)
+- PixelYourSite Pro (`pixelyoursite-pro`)
+- Sublium Subscriptions (`sublium-subscriptions-for-woocommerce`)
+
+WordPress will refuse to activate this plugin if those plugins are not installed. Sublium Pro is fine if the free Sublium plugin is also present.
 
 ## Install
 
@@ -99,6 +103,7 @@ assets/
   admin.css
   admin.js
   dashboard.js
+  fonts/                  Google Sans (SIL Open Font License 1.1, self-hosted)
 ```
 
 ## WordPress.org assets

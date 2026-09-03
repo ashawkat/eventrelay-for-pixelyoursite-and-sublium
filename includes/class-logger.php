@@ -197,6 +197,55 @@ class PYS_Sublium_Bridge_Logger {
 	}
 
 	/**
+	 * Keep order groups that include a given action.
+	 *
+	 * @param array<int,array<string,mixed>> $groups Grouped rows.
+	 * @param string                         $filter all|allowed|sent|blocked.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function filter_groups_by_action( $groups, $filter ) {
+		$filter = sanitize_key( $filter );
+		if ( ! in_array( $filter, array( 'allowed', 'sent', 'blocked' ), true ) ) {
+			return $groups;
+		}
+
+		return array_values(
+			array_filter(
+				$groups,
+				static function ( $group ) use ( $filter ) {
+					return ! empty( $group['actions'][ $filter ] );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Slice grouped orders into a page.
+	 *
+	 * @param array<int,array<string,mixed>> $groups   Grouped rows.
+	 * @param int                            $page     Requested page, 1-based.
+	 * @param int                            $per_page Orders per page.
+	 * @return array<string,mixed>
+	 */
+	public static function paginate_groups( $groups, $page, $per_page = 10 ) {
+		$per_page = max( 1, absint( $per_page ) );
+		$total    = count( $groups );
+		$pages    = max( 1, (int) ceil( $total / $per_page ) );
+		$page     = min( max( 1, absint( $page ) ), $pages );
+		$offset   = ( $page - 1 ) * $per_page;
+
+		return array(
+			'groups'     => array_slice( $groups, $offset, $per_page ),
+			'page'       => $page,
+			'pages'      => $pages,
+			'total'      => $total,
+			'per_page'   => $per_page,
+			'from'       => $total ? $offset + 1 : 0,
+			'to'         => $total ? min( $offset + $per_page, $total ) : 0,
+		);
+	}
+
+	/**
 	 * Counts used by the dashboard cards.
 	 *
 	 * @return array<string,int>

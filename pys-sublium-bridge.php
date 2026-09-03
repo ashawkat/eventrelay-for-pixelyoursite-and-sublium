@@ -5,7 +5,7 @@
  * Version:           1.2.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Requires Plugins:  woocommerce
+ * Requires Plugins:  woocommerce, pixelyoursite-pro, sublium-subscriptions-for-woocommerce
  * Author:            Betatech
  * Author URI:        https://betatech.co/
  * License:           GPL-3.0-or-later

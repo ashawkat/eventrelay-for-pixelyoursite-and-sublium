@@ -1,6 +1,35 @@
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-weight: 400 700;
+	font-display: swap;
+	src: url('fonts/google-sans-latin-ext.woff2') format('woff2');
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-weight: 400 700;
+	font-display: swap;
+	src: url('fonts/google-sans-latin.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 .pysb-dash {
 	max-width: 1180px;
 	margin: 16px 20px 32px 0;
+	font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.pysb-dash button,
+.pysb-dash input,
+.pysb-dash select,
+.pysb-dash textarea,
+.pysb-dash .button,
+.pysb-dash .pysb-filter,
+.pysb-dash .pysb-order {
+	font-family: inherit;
 }
 
 .pysb-hero {
@@ -155,6 +184,9 @@
 	padding: 5px 12px;
 	cursor: pointer;
 	font-weight: 600;
+	color: #111827;
+	text-decoration: none;
+	line-height: 1.4;
 }
 
 .pysb-filter.is-active {
@@ -298,6 +330,69 @@
 
 .pysb-empty.is-hidden {
 	display: none;
+}
+
+.pysb-pager {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px solid #e5e7eb;
+}
+
+.pysb-pager__meta {
+	margin: 0;
+	color: #6b7280;
+	font-size: 12px;
+}
+
+.pysb-pager .page-numbers {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pysb-pager .page-numbers li {
+	margin: 0;
+}
+
+.pysb-pager .page-numbers a,
+.pysb-pager .page-numbers span {
+	display: inline-flex;
+	min-width: 32px;
+	height: 32px;
+	align-items: center;
+	justify-content: center;
+	padding: 0 8px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	background: #fff;
+	color: #111827;
+	text-decoration: none;
+	font-size: 13px;
+	font-weight: 600;
+	box-sizing: border-box;
+}
+
+.pysb-pager .page-numbers a:hover {
+	border-color: #111827;
+}
+
+.pysb-pager .page-numbers .current {
+	background: #111827;
+	border-color: #111827;
+	color: #fff;
+}
+
+.pysb-pager .page-numbers .dots {
+	border-color: transparent;
+	background: transparent;
 }
 
 .pysb-settings {

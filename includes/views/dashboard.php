@@ -6,16 +6,26 @@
  *
  * @var array<string,mixed> $settings Settings.
  * @var array<int,array<string,mixed>> $entries Log rows newest first.
- * @var array<int,array<string,mixed>> $groups Entries grouped by order.
+ * @var array<int,array<string,mixed>> $groups Entries grouped by order (current page).
  * @var array<string,int> $stats Counts.
  * @var bool $pys_ok PixelYourSite active.
  * @var bool $sub_ok Sublium active.
  * @var array<string,mixed>|null $inspect Order inspection result.
+ * @var string $filter Active activity filter.
+ * @var array<string,mixed> $pagination Activity pagination.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
+$pys_sublium_bridge_filter     = isset( $filter ) ? $filter : 'all';
+$pys_sublium_bridge_paging     = isset( $pagination ) && is_array( $pagination ) ? $pagination : array();
+$pys_sublium_bridge_filters    = array(
+	'all'     => __( 'All', 'pys-sublium-bridge' ),
+	'allowed' => __( 'Purchases', 'pys-sublium-bridge' ),
+	'sent'    => __( 'First-time', 'pys-sublium-bridge' ),
+	'blocked' => __( 'Blocked', 'pys-sublium-bridge' ),
+);
 ?>
 <div class="wrap pysb-dash">
 	<div class="pysb-hero">
@@ -77,19 +87,36 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 			</div>
 
 			<div class="pysb-filters" role="tablist">
-				<button type="button" class="pysb-filter is-active" data-filter="all"><?php esc_html_e( 'All', 'pys-sublium-bridge' ); ?></button>
-				<button type="button" class="pysb-filter" data-filter="allowed"><?php esc_html_e( 'Purchases', 'pys-sublium-bridge' ); ?></button>
-				<button type="button" class="pysb-filter" data-filter="sent"><?php esc_html_e( 'First-time', 'pys-sublium-bridge' ); ?></button>
-				<button type="button" class="pysb-filter" data-filter="blocked"><?php esc_html_e( 'Blocked', 'pys-sublium-bridge' ); ?></button>
+				<?php foreach ( $pys_sublium_bridge_filters as $pys_sublium_bridge_filter_key => $pys_sublium_bridge_filter_label ) : ?>
+					<?php
+					$pys_sublium_bridge_filter_url = PYS_Sublium_Bridge_Admin::dashboard_url(
+						array(
+							'pys_sublium_bridge_filter' => 'all' === $pys_sublium_bridge_filter_key ? null : $pys_sublium_bridge_filter_key,
+							'pysb_paged'                => null,
+						)
+					);
+					?>
+					<a
+						class="pysb-filter<?php echo $pys_sublium_bridge_filter === $pys_sublium_bridge_filter_key ? ' is-active' : ''; ?>"
+						href="<?php echo esc_url( $pys_sublium_bridge_filter_url ); ?>#pysb-activity"
+						role="tab"
+						aria-selected="<?php echo $pys_sublium_bridge_filter === $pys_sublium_bridge_filter_key ? 'true' : 'false'; ?>"
+					><?php echo esc_html( $pys_sublium_bridge_filter_label ); ?></a>
+				<?php endforeach; ?>
 			</div>
 
 			<?php if ( empty( $groups ) ) : ?>
-				<div class="pysb-empty">
-					<strong><?php esc_html_e( 'Nothing logged yet', 'pys-sublium-bridge' ); ?></strong>
-					<p><?php esc_html_e( 'Place a first-time order or wait for a Sublium renewal. This feed will show exactly what was sent to Meta, Google, TikTok, and OpenAI.', 'pys-sublium-bridge' ); ?></p>
+				<div class="pysb-empty" id="pysb-activity">
+					<?php if ( 'all' === $pys_sublium_bridge_filter ) : ?>
+						<strong><?php esc_html_e( 'Nothing logged yet', 'pys-sublium-bridge' ); ?></strong>
+						<p><?php esc_html_e( 'Place a first-time order or wait for a Sublium renewal. This feed will show exactly what was sent to Meta, Google, TikTok, and OpenAI.', 'pys-sublium-bridge' ); ?></p>
+					<?php else : ?>
+						<strong><?php esc_html_e( 'No orders match this filter.', 'pys-sublium-bridge' ); ?></strong>
+						<p><?php esc_html_e( 'Try All, or wait for a matching Purchase or renewal.', 'pys-sublium-bridge' ); ?></p>
+					<?php endif; ?>
 				</div>
 			<?php else : ?>
-				<ul class="pysb-feed">
+				<ul class="pysb-feed" id="pysb-activity">
 					<?php foreach ( $groups as $pys_sublium_bridge_group ) : ?>
 						<?php
 						$pys_sublium_bridge_order_id = isset( $pys_sublium_bridge_group['order_id'] ) ? (int) $pys_sublium_bridge_group['order_id'] : 0;
@@ -154,9 +181,22 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 						</li>
 					<?php endforeach; ?>
 				</ul>
-				<p class="pysb-empty is-hidden" data-empty-filter>
-					<?php esc_html_e( 'No orders match this filter.', 'pys-sublium-bridge' ); ?>
-				</p>
+				<?php if ( ! empty( $pys_sublium_bridge_paging['total'] ) ) : ?>
+					<nav class="pysb-pager" aria-label="<?php esc_attr_e( 'Activity pages', 'pys-sublium-bridge' ); ?>">
+						<p class="pysb-pager__meta">
+							<?php
+							printf(
+								/* translators: 1: first order on page, 2: last order on page, 3: total matching orders */
+								esc_html__( 'Showing %1$s–%2$s of %3$s orders', 'pys-sublium-bridge' ),
+								esc_html( (string) $pys_sublium_bridge_paging['from'] ),
+								esc_html( (string) $pys_sublium_bridge_paging['to'] ),
+								esc_html( (string) $pys_sublium_bridge_paging['total'] )
+							);
+							?>
+						</p>
+						<?php echo wp_kses_post( PYS_Sublium_Bridge_Admin::pagination_html( $pys_sublium_bridge_paging ) ); ?>
+					</nav>
+				<?php endif; ?>
 			<?php endif; ?>
 		</section>
 
@@ -217,6 +257,9 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 				</div>
 				<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="pysb-inspect">
 					<input type="hidden" name="page" value="pys-sublium-bridge" />
+					<?php if ( 'all' !== $pys_sublium_bridge_filter ) : ?>
+						<input type="hidden" name="pys_sublium_bridge_filter" value="<?php echo esc_attr( $pys_sublium_bridge_filter ); ?>" />
+					<?php endif; ?>
 					<label class="screen-reader-text" for="pys-sublium-bridge-order"><?php esc_html_e( 'Order ID', 'pys-sublium-bridge' ); ?></label>
 					<input id="pys-sublium-bridge-order" type="number" min="1" name="pys_sublium_bridge_order" value="<?php echo $inspect && ! empty( $inspect['order_id'] ) ? esc_attr( (string) $inspect['order_id'] ) : ''; ?>" placeholder="<?php esc_attr_e( 'Order ID', 'pys-sublium-bridge' ); ?>" />
 					<button type="submit" class="button"><?php esc_html_e( 'Check', 'pys-sublium-bridge' ); ?></button>
