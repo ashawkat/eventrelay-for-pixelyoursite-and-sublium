@@ -1,5 +1,7 @@
 # PYS Sublium Bridge
 
+![PYS Sublium Bridge](.wordpress-org/banner-1544x500.png)
+
 WordPress plugin that connects [PixelYourSite Pro](https://www.pixelyoursite.com/) to [Sublium Subscriptions](https://sublium.com/). It stops subscription **renewals** from being sent as **Purchase** events, sends PixelYourSite’s **FirstTimeBuyer** event on a customer’s first sale, and shows every decision on an admin dashboard.
 
 The WordPress.org plugin directory uses `readme.txt`. This file is the GitHub overview.
