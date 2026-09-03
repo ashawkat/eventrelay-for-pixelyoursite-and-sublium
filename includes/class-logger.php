@@ -133,6 +133,28 @@ class PYS_Sublium_Bridge_Logger {
 	}
 
 	/**
+	 * Whether this order already has a log row for an action.
+	 *
+	 * @param int    $order_id Order ID.
+	 * @param string $action   Action key.
+	 * @return bool
+	 */
+	public function has_action_for_order( $order_id, $action ) {
+		$order_id = absint( $order_id );
+		if ( ! $order_id ) {
+			return false;
+		}
+
+		foreach ( $this->get_entries() as $entry ) {
+			if ( absint( $entry['order_id'] ?? 0 ) === $order_id && ( $entry['action'] ?? '' ) === $action ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Group log rows by order, newest orders first.
 	 *
 	 * @param array<int,array<string,mixed>> $entries Rows newest first.

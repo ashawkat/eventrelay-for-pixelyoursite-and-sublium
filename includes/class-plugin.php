@@ -162,6 +162,7 @@ final class PYS_Sublium_Bridge_Plugin {
 	 */
 	public static function is_sublium_active() {
 		return function_exists( 'sublium_get_subscription' )
+			|| function_exists( 'sublium_order_contains_renewal' )
 			|| function_exists( 'sublium_init' )
 			|| class_exists( '\Sublium_WCS\Includes\Controller\Subscriptions\Subscription' )
 			|| class_exists( '\Sublium\Includes\database\Subscriptions' );

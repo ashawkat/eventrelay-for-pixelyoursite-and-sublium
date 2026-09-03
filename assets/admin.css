@@ -331,6 +331,64 @@
 	font-size: 12px;
 }
 
+.pysb-inspect {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.pysb-inspect input[type='number'] {
+	width: 100%;
+	max-width: 140px;
+}
+
+.pysb-inspect-result {
+	padding: 12px;
+	border-radius: 12px;
+	border: 1px solid #e5e7eb;
+	background: #f9fafb;
+}
+
+.pysb-inspect-result p {
+	margin: 6px 0 0;
+}
+
+.pysb-inspect-result ul {
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pysb-inspect-result li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 4px 0;
+	border-top: 1px solid #e5e7eb;
+	font-size: 12px;
+}
+
+.pysb-inspect-result li span {
+	color: #6b7280;
+}
+
+.pysb-inspect-result--blocked {
+	border-color: #fecaca;
+	background: #fef2f2;
+}
+
+.pysb-inspect-result--parent,
+.pysb-inspect-result--allowed {
+	border-color: #bbf7d0;
+	background: #f0fdf4;
+}
+
+.pysb-inspect-result--renewal-open,
+.pysb-inspect-result--missing {
+	border-color: #fde68a;
+	background: #fffbeb;
+}
+
 .pysb-card--help ol {
 	margin: 12px 0 0 18px;
 }

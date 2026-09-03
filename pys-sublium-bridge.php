@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PYS Sublium Bridge
  * Description:       Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked.
- * Version:           1.2.1
+ * Version:           1.2.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -28,7 +28,7 @@ add_action(
 	}
 );
 
-define( 'PYS_SUBLIUM_BRIDGE_VERSION', '1.2.1' );
+define( 'PYS_SUBLIUM_BRIDGE_VERSION', '1.2.3' );
 define( 'PYS_SUBLIUM_BRIDGE_FILE', __FILE__ );
 define( 'PYS_SUBLIUM_BRIDGE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PYS_SUBLIUM_BRIDGE_URL', plugin_dir_url( __FILE__ ) );

@@ -38,6 +38,9 @@ class PYS_Sublium_Bridge_Detector {
 	private function __construct() {
 		add_action( 'sublium_wcs_before_process_renewal_payment', array( $this, 'mark_automatic_renewal' ), 5, 2 );
 		add_action( 'sublium_wcs_subscription_renewal_payment_complete', array( $this, 'mark_automatic_renewal' ), 5, 2 );
+		add_action( 'woocommerce_subscription_renewal_payment_complete', array( $this, 'mark_automatic_renewal' ), 5, 2 );
+		add_action( 'woocommerce_order_status_changed', array( $this, 'maybe_log_blocked_renewal' ), 20, 4 );
+		add_action( 'add_meta_boxes', array( $this, 'register_order_metabox' ) );
 	}
 
 	/**
@@ -50,13 +53,60 @@ class PYS_Sublium_Bridge_Detector {
 	public function mark_automatic_renewal( $subscription, $order = null ) {
 		$order = $this->normalize_order( $order );
 
+		if ( ! $order && is_object( $subscription ) && method_exists( $subscription, 'get_last_order' ) ) {
+			$order = $this->normalize_order( $subscription->get_last_order( 'ids', 'renewal' ) );
+		}
+
 		if ( ! $order ) {
 			return;
 		}
 
+		$order->update_meta_data( '_sublium_wcs_subscription_renewal', 'yes' );
 		$order->update_meta_data( '_sublium_subscription_renewal', 'yes' );
 		$order->update_meta_data( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, 'automatic' );
 		$order->save();
+
+		$this->log_blocked_renewal(
+			$order,
+			sprintf(
+				/* translators: %d: order ID */
+				__( 'Sublium processed an automatic renewal for order #%d. Purchase will be blocked.', 'pys-sublium-bridge' ),
+				$order->get_id()
+			)
+		);
+	}
+
+	/**
+	 * Log a blocked renewal when a paid status is reached, even if PixelYourSite skipped silently.
+	 *
+	 * @param int      $order_id   Order ID.
+	 * @param string   $old_status Previous status.
+	 * @param string   $new_status New status.
+	 * @param WC_Order $order      Order.
+	 * @return void
+	 */
+	public function maybe_log_blocked_renewal( $order_id, $old_status, $new_status, $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		$new_status = str_replace( 'wc-', '', $new_status );
+		if ( ! in_array( $new_status, array( 'processing', 'completed', 'on-hold' ), true ) ) {
+			return;
+		}
+
+		if ( ! $this->should_skip_purchase( $order ) ) {
+			return;
+		}
+
+		$this->log_blocked_renewal(
+			$order,
+			sprintf(
+				/* translators: %d: order ID */
+				__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'pys-sublium-bridge' ),
+				$order->get_id()
+			)
+		);
 	}
 
 	/**
@@ -131,7 +181,14 @@ class PYS_Sublium_Bridge_Detector {
 			}
 		}
 
-		foreach ( array( '_sublium_wcs_subscription_id', '_sublium_subscription_id' ) as $key ) {
+		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			$wcs_subs = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) );
+			if ( is_array( $wcs_subs ) ) {
+				$ids = array_merge( $ids, array_keys( $wcs_subs ) );
+			}
+		}
+
+		foreach ( array( '_sublium_wcs_subscription_id', '_sublium_subscription_id', '_subscription_renewal' ) as $key ) {
 			$single = $order->get_meta( $key, true );
 			if ( $single ) {
 				$ids[] = $single;
@@ -188,7 +245,10 @@ class PYS_Sublium_Bridge_Detector {
 	/**
 	 * Detect renewal from order meta and Sublium links.
 	 *
-	 * Parent/checkout orders keep `_sublium_wcs_parent_order` and must never be treated as renewals.
+	 * Sublium's canonical renewal flag is `_sublium_wcs_subscription_renewal` = yes
+	 * (`sublium_order_contains_renewal()`). Parent checkout orders keep
+	 * `_sublium_wcs_parent_order` and must never be treated as renewals.
+	 * Upgrades and resubscribes are new sales, not renewals.
 	 *
 	 * @param WC_Order $order Order.
 	 * @return bool
@@ -198,8 +258,27 @@ class PYS_Sublium_Bridge_Detector {
 			return false;
 		}
 
-		$flag = strtolower( (string) $order->get_meta( '_sublium_subscription_renewal', true ) );
-		if ( in_array( $flag, array( 'yes', '1', 'true' ), true ) ) {
+		if ( $this->is_upgrade_or_resubscribe( $order ) ) {
+			return false;
+		}
+
+		if ( function_exists( 'sublium_order_contains_renewal' ) && sublium_order_contains_renewal( $order ) ) {
+			return true;
+		}
+
+		foreach ( array(
+			'_sublium_wcs_subscription_renewal',
+			'_sublium_wcs_subscription_payoff',
+			'_sublium_subscription_payoff',
+			'_sublium_subscription_renewal',
+		) as $key ) {
+			if ( $this->meta_is_yes( $order, $key ) ) {
+				return true;
+			}
+		}
+
+		// Official WooCommerce Subscriptions stores the subscription ID on renewal orders.
+		if ( $order->get_meta( '_subscription_renewal', true ) ) {
 			return true;
 		}
 
@@ -217,12 +296,22 @@ class PYS_Sublium_Bridge_Detector {
 		}
 
 		$order_type = strtolower( (string) $this->get_order_type_meta( $order ) );
-		if ( in_array( $order_type, array( 'renewal', 'subscription_renewal' ), true ) ) {
+		if ( in_array( $order_type, array( 'renewal', 'subscription_renewal', 'payoff' ), true ) ) {
 			return true;
 		}
 
 		$created_via = method_exists( $order, 'get_created_via' ) ? (string) $order->get_created_via() : '';
-		if ( in_array( $created_via, array( 'subscription', 'subscription_renewal', 'sublium_renewal' ), true ) ) {
+		if ( in_array(
+			$created_via,
+			array(
+				'sublium_subscription_renewal',
+				'sublium_subscription_payoff',
+				'subscription',
+				'subscription_renewal',
+				'sublium_renewal',
+			),
+			true
+		) ) {
 			return true;
 		}
 
@@ -250,8 +339,11 @@ class PYS_Sublium_Bridge_Detector {
 			return $stored;
 		}
 
-		$early = $order->get_meta( '_sublium_early_renewal', true );
-		if ( in_array( strtolower( (string) $early ), array( 'yes', '1', 'true' ), true ) ) {
+		if ( $order->get_meta( '_sublium_wcs_order_now', true ) ) {
+			return 'manual';
+		}
+
+		if ( $this->meta_is_yes( $order, '_sublium_early_renewal' ) || $this->meta_is_yes( $order, '_sublium_wcs_early_renewal' ) ) {
 			return 'manual';
 		}
 
@@ -273,6 +365,8 @@ class PYS_Sublium_Bridge_Detector {
 	/**
 	 * Whether this is the original checkout order that created the subscription.
 	 *
+	 * Sublium writes `_sublium_wcs_parent_order` on the first paid checkout.
+	 *
 	 * @param WC_Order $order Order.
 	 * @return bool
 	 */
@@ -280,6 +374,51 @@ class PYS_Sublium_Bridge_Detector {
 		$parent_meta = $order->get_meta( '_sublium_wcs_parent_order', true );
 
 		return ! empty( $parent_meta );
+	}
+
+	/**
+	 * Whether this order is a Sublium upgrade or resubscribe (a new sale, not a renewal).
+	 *
+	 * @param WC_Order $order Order.
+	 * @return bool
+	 */
+	private function is_upgrade_or_resubscribe( $order ) {
+		if ( function_exists( 'sublium_order_is_upgrade' ) && sublium_order_is_upgrade( $order ) ) {
+			return true;
+		}
+
+		if ( function_exists( 'sublium_order_contains_resubscribe' ) && sublium_order_contains_resubscribe( $order ) ) {
+			return true;
+		}
+
+		if ( $this->meta_is_yes( $order, '_sublium_wcs_upgrade_order' ) || $this->meta_is_yes( $order, '_sublium_wcs_resubscribe' ) ) {
+			return true;
+		}
+
+		$created_via = method_exists( $order, 'get_created_via' ) ? (string) $order->get_created_via() : '';
+
+		return in_array(
+			$created_via,
+			array(
+				'sublium_subscription_upgrade',
+				'sublium_subscription_resubscribe',
+				'sublium_subscription_changes',
+			),
+			true
+		);
+	}
+
+	/**
+	 * Whether an order meta flag is a truthy yes value.
+	 *
+	 * @param WC_Order $order Order.
+	 * @param string   $key   Meta key.
+	 * @return bool
+	 */
+	private function meta_is_yes( $order, $key ) {
+		$flag = strtolower( (string) $order->get_meta( $key, true ) );
+
+		return in_array( $flag, array( 'yes', '1', 'true' ), true );
 	}
 
 	/**
@@ -421,5 +560,199 @@ class PYS_Sublium_Bridge_Detector {
 		$loaded = wc_get_order( $order );
 
 		return $loaded instanceof WC_Order ? $loaded : null;
+	}
+
+	/**
+	 * Write one blocked log row per order.
+	 *
+	 * @param WC_Order $order   Order.
+	 * @param string   $message Message.
+	 * @return void
+	 */
+	private function log_blocked_renewal( $order, $message ) {
+		if ( ! $this->should_skip_purchase( $order ) ) {
+			return;
+		}
+
+		$logger = PYS_Sublium_Bridge_Logger::instance();
+		if ( $logger->has_action_for_order( $order->get_id(), 'blocked' ) ) {
+			return;
+		}
+
+		$logger->log(
+			'blocked',
+			array(
+				'order_id'     => $order->get_id(),
+				'event'        => 'Purchase',
+				'channel'      => 'sublium',
+				'platform'     => '',
+				'renewal'      => true,
+				'renewal_type' => $this->get_renewal_type( $order ),
+				'first_time'   => false,
+				'message'      => $message,
+			)
+		);
+	}
+
+	/**
+	 * Record recent paid renewals that PixelYourSite skipped without hitting our filters.
+	 *
+	 * @return void
+	 */
+	public function backfill_recent_renewals() {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
+		$orders = wc_get_orders(
+			array(
+				'limit'   => 40,
+				'status'  => array( 'processing', 'completed', 'on-hold' ),
+				'orderby' => 'date',
+				'order'   => 'DESC',
+				'return'  => 'objects',
+			)
+		);
+
+		foreach ( $orders as $order ) {
+			if ( ! $order instanceof WC_Order || ! $this->should_skip_purchase( $order ) ) {
+				continue;
+			}
+
+			$this->log_blocked_renewal(
+				$order,
+				sprintf(
+					/* translators: %d: order ID */
+					__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'pys-sublium-bridge' ),
+					$order->get_id()
+				)
+			);
+		}
+	}
+
+	/**
+	 * Human-readable inspection of how this order would be treated.
+	 *
+	 * @param WC_Order|int $order Order.
+	 * @return array<string,mixed>
+	 */
+	public function inspect( $order ) {
+		$order = $this->normalize_order( $order );
+
+		if ( ! $order ) {
+			return array(
+				'found'       => false,
+				'order_id'    => 0,
+				'headline'    => __( 'That order was not found.', 'pys-sublium-bridge' ),
+				'detail'      => '',
+				'would_block' => false,
+				'status'      => 'missing',
+				'facts'       => array(),
+			);
+		}
+
+		$is_parent   = $this->is_parent_subscription_order( $order );
+		$is_renewal  = $this->is_renewal( $order );
+		$would_block = $this->should_skip_purchase( $order );
+		$type        = $is_renewal ? $this->get_renewal_type( $order ) : '';
+		$sub_ids     = $this->get_subscription_ids( $order );
+		$parent_id   = 0;
+
+		foreach ( $sub_ids as $subscription_id ) {
+			$parent_id = $this->get_subscription_parent_order_id( $this->get_subscription( $subscription_id ) );
+			if ( $parent_id ) {
+				break;
+			}
+		}
+
+		if ( $is_parent ) {
+			$headline = __( 'This is the original checkout that created the subscription.', 'pys-sublium-bridge' );
+			$detail   = __( 'Purchase should be sent. A later Sublium charge creates a different order, and that one is the renewal to block.', 'pys-sublium-bridge' );
+			$status   = 'parent';
+		} elseif ( $would_block ) {
+			$headline = __( 'This is a Sublium renewal. Purchase will be blocked.', 'pys-sublium-bridge' );
+			$detail   = __( 'If PixelYourSite tries to send Purchase for this order, the activity log will show Renewal blocked.', 'pys-sublium-bridge' );
+			$status   = 'blocked';
+		} elseif ( $is_renewal ) {
+			$headline = __( 'This is a Sublium renewal, but blocking is turned off for this type.', 'pys-sublium-bridge' );
+			$detail   = __( 'Turn on Block automatic renewals or Block manual / early renewals, then Purchase will be kept out of ad data.', 'pys-sublium-bridge' );
+			$status   = 'renewal-open';
+		} else {
+			$headline = __( 'This is not detected as a Sublium renewal.', 'pys-sublium-bridge' );
+			$detail   = __( 'Purchase will be sent. If you expected a block, this is likely the first subscription checkout, or Sublium has not marked the order as a renewal.', 'pys-sublium-bridge' );
+			$status   = 'allowed';
+		}
+
+		$sublium_renewal = $order->get_meta( '_sublium_wcs_subscription_renewal', true );
+		if ( ! $sublium_renewal ) {
+			$sublium_renewal = $order->get_meta( '_sublium_subscription_renewal', true );
+		}
+
+		$facts = array(
+			__( 'Order', 'pys-sublium-bridge' )                    => '#' . $order->get_id(),
+			__( 'Created via', 'pys-sublium-bridge' )              => $order->get_created_via() ? $order->get_created_via() : '—',
+			__( 'Sublium renewal flag', 'pys-sublium-bridge' )     => $sublium_renewal ? $sublium_renewal : '—',
+			__( 'Sublium payoff', 'pys-sublium-bridge' )           => $this->meta_is_yes( $order, '_sublium_wcs_subscription_payoff' ) || $this->meta_is_yes( $order, '_sublium_subscription_payoff' ) ? __( 'yes', 'pys-sublium-bridge' ) : '—',
+			__( 'WooCommerce renewal', 'pys-sublium-bridge' )      => $order->get_meta( '_subscription_renewal', true ) ? '#' . $order->get_meta( '_subscription_renewal', true ) : '—',
+			__( 'Bridge stamp', 'pys-sublium-bridge' )             => $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true ) ? $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true ) : '—',
+			__( 'Parent checkout meta', 'pys-sublium-bridge' )     => $is_parent ? __( 'yes', 'pys-sublium-bridge' ) : '—',
+			__( 'Linked subscription', 'pys-sublium-bridge' )      => $sub_ids ? implode( ', ', array_map( 'strval', $sub_ids ) ) : '—',
+			__( 'Subscription parent order', 'pys-sublium-bridge' ) => $parent_id ? '#' . $parent_id : '—',
+			__( 'Renewal type', 'pys-sublium-bridge' )             => $type ? $type : '—',
+			__( 'PixelYourSite Purchase fired', 'pys-sublium-bridge' ) => $order->get_meta( '_pys_purchase_event_fired', true ) ? __( 'yes — this would mean a leak', 'pys-sublium-bridge' ) : __( 'no', 'pys-sublium-bridge' ),
+		);
+
+		return array(
+			'found'       => true,
+			'order_id'    => $order->get_id(),
+			'headline'    => $headline,
+			'detail'      => $detail,
+			'would_block' => $would_block,
+			'status'      => $status,
+			'facts'       => $facts,
+		);
+	}
+
+	/**
+	 * Order-screen metabox.
+	 *
+	 * @return void
+	 */
+	public function register_order_metabox() {
+		$screens = array( 'shop_order' );
+
+		if ( function_exists( 'wc_get_page_screen_id' ) ) {
+			$screens[] = wc_get_page_screen_id( 'shop-order' );
+		}
+
+		foreach ( array_unique( array_filter( $screens ) ) as $screen ) {
+			add_meta_box(
+				'pys-sublium-bridge-order',
+				__( 'PYS Sublium Bridge', 'pys-sublium-bridge' ),
+				array( $this, 'render_order_metabox' ),
+				$screen,
+				'side',
+				'high'
+			);
+		}
+	}
+
+	/**
+	 * Render the order metabox.
+	 *
+	 * @param WP_Post|WC_Order $post_or_order Order.
+	 * @return void
+	 */
+	public function render_order_metabox( $post_or_order ) {
+		$order = $post_or_order instanceof WC_Order
+			? $post_or_order
+			: ( isset( $post_or_order->ID ) ? wc_get_order( $post_or_order->ID ) : null );
+
+		$inspect = $this->inspect( $order );
+
+		echo '<p><strong>' . esc_html( $inspect['headline'] ) . '</strong></p>';
+		if ( ! empty( $inspect['detail'] ) ) {
+			echo '<p>' . esc_html( $inspect['detail'] ) . '</p>';
+		}
 	}
 }

@@ -66,11 +66,13 @@ The **PYS Bridge** menu shows:
 
 An order is treated as a Sublium renewal when any of these are true:
 
-- `_sublium_subscription_renewal` is `yes` (Sublium’s own flag)
+- `_sublium_wcs_subscription_renewal` is `yes` (Sublium’s canonical flag; same as `sublium_order_contains_renewal()`)
+- `_sublium_wcs_subscription_payoff` is `yes` (installment payoff, treated like a renewal)
+- `created_via` is `sublium_subscription_renewal` or `sublium_subscription_payoff`
+- Official WooCommerce Subscriptions `_subscription_renewal` is set
 - The bridge stamped `_pys_sublium_renewal_type` during `sublium_wcs_subscription_renewal_payment_complete`
-- The order is linked to a subscription whose **parent order is a different order**
 
-The original checkout order that creates the subscription (`_sublium_wcs_parent_order`) is **never** treated as a renewal.
+The original checkout (`_sublium_wcs_parent_order`) is **never** treated as a renewal. Upgrades and resubscribes are new sales, not renewals.
 
 If official WooCommerce Subscriptions is not installed, the plugin also provides the `wcs_order_contains_renewal()` helpers PixelYourSite already calls.
 

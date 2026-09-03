@@ -274,11 +274,19 @@ class PYS_Sublium_Bridge_Admin {
 		}
 
 		$settings = wp_parse_args( get_option( PYS_Sublium_Bridge_Plugin::OPTION_KEY, array() ), PYS_Sublium_Bridge_Plugin::default_settings() );
-		$entries  = array_reverse( PYS_Sublium_Bridge_Logger::instance()->get_entries() );
-		$groups   = PYS_Sublium_Bridge_Logger::group_entries_by_order( $entries );
-		$stats    = PYS_Sublium_Bridge_Logger::instance()->get_stats();
 		$pys_ok   = PYS_Sublium_Bridge_Plugin::is_pys_active();
 		$sub_ok   = PYS_Sublium_Bridge_Plugin::is_sublium_active();
+		$inspect  = null;
+
+		PYS_Sublium_Bridge_Detector::instance()->backfill_recent_renewals();
+		$entries = array_reverse( PYS_Sublium_Bridge_Logger::instance()->get_entries() );
+		$groups  = PYS_Sublium_Bridge_Logger::group_entries_by_order( $entries );
+		$stats   = PYS_Sublium_Bridge_Logger::instance()->get_stats();
+
+		$inspect_id = isset( $_GET['pys_sublium_bridge_order'] ) ? absint( wp_unslash( $_GET['pys_sublium_bridge_order'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $inspect_id ) {
+			$inspect = PYS_Sublium_Bridge_Detector::instance()->inspect( $inspect_id );
+		}
 
 		$log_cleared = isset( $_GET['log_cleared'] ) ? sanitize_text_field( wp_unslash( $_GET['log_cleared'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( '1' === $log_cleared ) {

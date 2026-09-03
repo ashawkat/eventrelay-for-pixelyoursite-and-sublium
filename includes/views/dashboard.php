@@ -10,6 +10,7 @@
  * @var array<string,int> $stats Counts.
  * @var bool $pys_ok PixelYourSite active.
  * @var bool $sub_ok Sublium active.
+ * @var array<string,mixed>|null $inspect Order inspection result.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -205,6 +206,39 @@ $pys_sublium_bridge_option_key = PYS_Sublium_Bridge_Plugin::OPTION_KEY;
 
 					<?php submit_button( __( 'Save settings', 'pys-sublium-bridge' ) ); ?>
 				</form>
+			</section>
+
+			<section class="pysb-card">
+				<div class="pysb-card__head">
+					<div>
+						<h2><?php esc_html_e( 'Check an order', 'pys-sublium-bridge' ); ?></h2>
+						<p><?php esc_html_e( 'Paste a WooCommerce order ID you think is a renewal. This tells you whether Purchase will be blocked.', 'pys-sublium-bridge' ); ?></p>
+					</div>
+				</div>
+				<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="pysb-inspect">
+					<input type="hidden" name="page" value="pys-sublium-bridge" />
+					<label class="screen-reader-text" for="pys-sublium-bridge-order"><?php esc_html_e( 'Order ID', 'pys-sublium-bridge' ); ?></label>
+					<input id="pys-sublium-bridge-order" type="number" min="1" name="pys_sublium_bridge_order" value="<?php echo $inspect && ! empty( $inspect['order_id'] ) ? esc_attr( (string) $inspect['order_id'] ) : ''; ?>" placeholder="<?php esc_attr_e( 'Order ID', 'pys-sublium-bridge' ); ?>" />
+					<button type="submit" class="button"><?php esc_html_e( 'Check', 'pys-sublium-bridge' ); ?></button>
+				</form>
+				<?php if ( is_array( $inspect ) ) : ?>
+					<div class="pysb-inspect-result pysb-inspect-result--<?php echo esc_attr( $inspect['status'] ); ?>">
+						<strong><?php echo esc_html( $inspect['headline'] ); ?></strong>
+						<?php if ( ! empty( $inspect['detail'] ) ) : ?>
+							<p><?php echo esc_html( $inspect['detail'] ); ?></p>
+						<?php endif; ?>
+						<?php if ( ! empty( $inspect['facts'] ) ) : ?>
+							<ul>
+								<?php foreach ( $inspect['facts'] as $pys_sublium_bridge_label => $pys_sublium_bridge_value ) : ?>
+									<li>
+										<span><?php echo esc_html( $pys_sublium_bridge_label ); ?></span>
+										<?php echo esc_html( (string) $pys_sublium_bridge_value ); ?>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 			</section>
 
 			<section class="pysb-card pysb-card--help">

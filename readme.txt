@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, tracking, facebook, analytics
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -66,6 +66,14 @@ No. The first order that creates the subscription is never treated as a renewal.
 Open **PYS Bridge** in the admin menu. The last 150 decisions are also written to WooCommerce → Status → Logs (`pys-sublium-bridge`).
 
 == Changelog ==
+
+= 1.2.3 =
+* Detect Sublium renewals using `_sublium_wcs_subscription_renewal` and Sublium's own `sublium_order_contains_renewal()` helper
+* Treat Sublium payoff orders as renewals, and leave upgrades / resubscribes as new sales
+
+= 1.2.2 =
+* Detect WooCommerce Subscriptions renewal orders and show them in Blocked even when PixelYourSite skips silently
+* Order checker and order-screen box so you can confirm whether a renewal will be blocked
 
 = 1.2.1 =
 * Group the activity log by order so destinations sit under one order card
