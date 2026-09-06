@@ -118,45 +118,6 @@ assets/
 
 PHP prefixes: `eventrelay`, `EventRelay`, `EVENTRELAY`. Text domain: `eventrelay-for-pixelyoursite-and-sublium`.
 
-## WordPress.org review notes
-
-These are the changes made for the directory review:
-
-- Renamed from PYS Sublium Bridge so the unique name is **EventRelay**, with PixelYourSite and Sublium only after **for**
-- Slug, text domain, main file, and folder are all `eventrelay-for-pixelyoursite-and-sublium`
-- `Requires Plugins` lists the Sublium free directory slug only: `sublium-subscriptions-for-woocommerce`
-- Settings save and PixelYourSite sync check capabilities as well as nonces
-- GitHub repo renamed to match the slug
-
-## WordPress.org assets
-
-Icon and banner files live in `.wordpress-org/`. They are **not** part of the plugin zip. After approval, upload them to the SVN `assets/` folder:
-
-- `icon-256x256.png` / `icon-128x128.png`
-- `banner-1544x500.png` (1544×500)
-- `banner-772x250.png` (772×250)
-
-## Packaging for Plugin Check
-
-Do not zip the working folder as-is. Exclude VCS and GitHub-only files so Plugin Check does not fail on `.git` or hidden files.
-
-`.distignore` already excludes:
-
-- `.git`
-- `.github`
-- `.wordpress-org`
-- `README.md`
-
-From the parent `plugins` directory:
-
-```bash
-cd "/path/to/wp-content/plugins"
-zip -r eventrelay-for-pixelyoursite-and-sublium.zip eventrelay-for-pixelyoursite-and-sublium \
-  -x "*/.git/*" "*/.github/*" "*/.wordpress-org/*" "*/README.md" "*/.DS_Store" "*/.distignore"
-```
-
-Then run Plugin Check on that zip (or on the extracted folder) before uploading to WordPress.org.
-
 ## License
 
 GPL-3.0-or-later
