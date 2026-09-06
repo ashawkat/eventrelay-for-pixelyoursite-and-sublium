@@ -2,20 +2,20 @@
 /**
  * Human-readable activity log for Purchase and FirstTimeBuyer decisions.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_Logger
+ * Class EventRelay_Logger
  */
-class PYS_Sublium_Bridge_Logger {
+class EventRelay_Logger {
 
 	/**
 	 * Option that stores log rows.
 	 */
-	const OPTION_KEY = 'pys_sublium_bridge_log';
+	const OPTION_KEY = 'eventrelay_log';
 
 	/**
 	 * Max rows kept.
@@ -57,7 +57,7 @@ class PYS_Sublium_Bridge_Logger {
 	 * @return void
 	 */
 	public function log( $action, $context = array() ) {
-		if ( ! PYS_Sublium_Bridge_Plugin::get_setting( 'logging_enabled' ) ) {
+		if ( ! EventRelay_Plugin::get_setting( 'logging_enabled' ) ) {
 			return;
 		}
 
@@ -116,7 +116,7 @@ class PYS_Sublium_Bridge_Logger {
 		if ( function_exists( 'wc_get_logger' ) ) {
 			wc_get_logger()->info(
 				$entry['message'] ? $entry['message'] : wp_json_encode( $entry ),
-				array( 'source' => 'pys-sublium-bridge' )
+				array( 'source' => 'eventrelay' )
 			);
 		}
 	}
@@ -302,8 +302,8 @@ class PYS_Sublium_Bridge_Logger {
 			return $entry['message'];
 		}
 
-		$order = ! empty( $entry['order_id'] ) ? '#' . $entry['order_id'] : __( 'unknown order', 'pys-sublium-bridge' );
-		$event = ! empty( $entry['event'] ) ? $entry['event'] : __( 'event', 'pys-sublium-bridge' );
+		$order = ! empty( $entry['order_id'] ) ? '#' . $entry['order_id'] : __( 'unknown order', 'eventrelay-for-pixelyoursite-and-sublium' );
+		$event = ! empty( $entry['event'] ) ? $entry['event'] : __( 'event', 'eventrelay-for-pixelyoursite-and-sublium' );
 		$via   = ! empty( $entry['channel'] ) ? $entry['channel'] : '';
 		$dest  = ! empty( $entry['platform'] ) ? $entry['platform'] : '';
 

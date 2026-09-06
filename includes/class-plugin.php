@@ -2,25 +2,25 @@
 /**
  * Main plugin class.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_Plugin
+ * Class EventRelay_Plugin
  */
-final class PYS_Sublium_Bridge_Plugin {
+final class EventRelay_Plugin {
 
 	/**
 	 * Option key.
 	 */
-	const OPTION_KEY = 'pys_sublium_bridge';
+	const OPTION_KEY = 'eventrelay';
 
 	/**
 	 * Order meta written when Sublium creates a renewal.
 	 */
-	const RENEWAL_TYPE_META = '_pys_sublium_renewal_type';
+	const RENEWAL_TYPE_META = '_eventrelay_renewal_type';
 
 	/**
 	 * Plugin instance.
@@ -46,11 +46,11 @@ final class PYS_Sublium_Bridge_Plugin {
 	 * Constructor.
 	 */
 	private function __construct() {
-		register_activation_hook( PYS_SUBLIUM_BRIDGE_FILE, array( $this, 'activate' ) );
+		register_activation_hook( EVENTRELAY_FILE, array( $this, 'activate' ) );
 
 		add_filter( 'wp_plugin_dependencies_slug', array( $this, 'map_dependency_slug' ) );
 		add_action( 'plugins_loaded', array( $this, 'init' ), 20 );
-		add_filter( 'plugin_action_links_' . PYS_SUBLIUM_BRIDGE_BASENAME, array( $this, 'add_settings_link' ) );
+		add_filter( 'plugin_action_links_' . EVENTRELAY_BASENAME, array( $this, 'add_settings_link' ) );
 	}
 
 	/**
@@ -63,16 +63,16 @@ final class PYS_Sublium_Bridge_Plugin {
 
 		if ( ! empty( $missing ) ) {
 			if ( function_exists( 'deactivate_plugins' ) ) {
-				deactivate_plugins( PYS_SUBLIUM_BRIDGE_BASENAME );
+				deactivate_plugins( EVENTRELAY_BASENAME );
 			}
 
 			$message = sprintf(
 				/* translators: %s: comma-separated plugin names */
-				__( 'PYS Sublium Bridge requires these plugins to be installed: %s.', 'pys-sublium-bridge' ),
+				__( 'EventRelay – Bridge for PixelYourSite and Sublium requires these plugins to be installed: %s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				implode( ', ', $missing )
 			);
 
-			wp_die( esc_html( $message ), esc_html__( 'Plugin dependency check failed', 'pys-sublium-bridge' ), array( 'back_link' => true ) );
+			wp_die( esc_html( $message ), esc_html__( 'Plugin dependency check failed', 'eventrelay-for-pixelyoursite-and-sublium' ), array( 'back_link' => true ) );
 		}
 
 		$current = get_option( self::OPTION_KEY, null );
@@ -83,14 +83,14 @@ final class PYS_Sublium_Bridge_Plugin {
 	}
 
 	/**
-	 * Map header slugs onto installed premium folders when the free slug is absent.
+	 * Map directory slugs onto installed premium folders when the free slug is absent.
 	 *
 	 * @param string $slug Dependency slug from Requires Plugins.
 	 * @return string
 	 */
 	public function map_dependency_slug( $slug ) {
-		if ( 'pixelyoursite-pro' === $slug && $this->plugin_directory_exists( 'pixelyoursite-pro' ) ) {
-			return $slug;
+		if ( 'pixelyoursite' === $slug && ! $this->plugin_directory_exists( $slug ) && $this->plugin_directory_exists( 'pixelyoursite-pro' ) ) {
+			return 'pixelyoursite-pro';
 		}
 
 		if ( 'sublium-subscriptions-for-woocommerce' === $slug && ! $this->plugin_directory_exists( $slug ) && $this->plugin_directory_exists( 'sublium-subscriptions-for-woocommerce-pro' ) ) {
@@ -131,27 +131,27 @@ final class PYS_Sublium_Bridge_Plugin {
 	 */
 	public function init() {
 		if ( is_admin() ) {
-			require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-admin.php';
-			PYS_Sublium_Bridge_Admin::instance();
+			require_once EVENTRELAY_PATH . 'includes/class-admin.php';
+			EventRelay_Admin::instance();
 		}
 
 		if ( ! self::is_woocommerce_active() ) {
 			return;
 		}
 
-		require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-logger.php';
-		require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-detector.php';
-		require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-compat.php';
-		require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-tracking.php';
-		require_once PYS_SUBLIUM_BRIDGE_PATH . 'includes/class-first-time-buyer.php';
+		require_once EVENTRELAY_PATH . 'includes/class-logger.php';
+		require_once EVENTRELAY_PATH . 'includes/class-detector.php';
+		require_once EVENTRELAY_PATH . 'includes/class-compat.php';
+		require_once EVENTRELAY_PATH . 'includes/class-tracking.php';
+		require_once EVENTRELAY_PATH . 'includes/class-first-time-buyer.php';
 
-		PYS_Sublium_Bridge_Logger::instance();
-		PYS_Sublium_Bridge_Detector::instance();
-		PYS_Sublium_Bridge_Compat::instance();
+		EventRelay_Logger::instance();
+		EventRelay_Detector::instance();
+		EventRelay_Compat::instance();
 
 		if ( self::is_pys_active() ) {
-			PYS_Sublium_Bridge_Tracking::instance();
-			PYS_Sublium_Bridge_First_Time_Buyer::instance();
+			EventRelay_Tracking::instance();
+			EventRelay_First_Time_Buyer::instance();
 		}
 	}
 
@@ -162,11 +162,11 @@ final class PYS_Sublium_Bridge_Plugin {
 	 * @return array<int,string>
 	 */
 	public function add_settings_link( $links ) {
-		$url = admin_url( 'admin.php?page=pys-sublium-bridge' );
+		$url = admin_url( 'admin.php?page=eventrelay' );
 
 		array_unshift(
 			$links,
-			'<a href="' . esc_url( $url ) . '">' . esc_html__( 'Settings', 'pys-sublium-bridge' ) . '</a>'
+			'<a href="' . esc_url( $url ) . '">' . esc_html__( 'Settings', 'eventrelay-for-pixelyoursite-and-sublium' ) . '</a>'
 		);
 
 		return $links;
@@ -222,8 +222,10 @@ final class PYS_Sublium_Bridge_Plugin {
 			$missing[] = 'WooCommerce';
 		}
 
-		if ( ! self::plugin_file_exists( 'pixelyoursite-pro/pixelyoursite-pro.php' ) && ! self::is_pys_active() ) {
-			$missing[] = 'PixelYourSite Pro';
+		if ( ! self::plugin_file_exists( 'pixelyoursite/pixelyoursite.php' )
+			&& ! self::plugin_file_exists( 'pixelyoursite-pro/pixelyoursite-pro.php' )
+			&& ! self::is_pys_active() ) {
+			$missing[] = 'PixelYourSite';
 		}
 
 		if ( ! self::plugin_file_exists( 'sublium-subscriptions-for-woocommerce/sublium-subscriptions-for-woocommerce.php' )
@@ -258,7 +260,7 @@ final class PYS_Sublium_Bridge_Plugin {
 		}
 
 		if ( ! self::is_pys_active() ) {
-			$missing[] = 'PixelYourSite Pro';
+			$missing[] = 'PixelYourSite';
 		}
 
 		if ( ! self::is_sublium_active() ) {
@@ -291,7 +293,7 @@ final class PYS_Sublium_Bridge_Plugin {
 	}
 
 	/**
-	 * Whether PixelYourSite Pro is available.
+	 * Whether PixelYourSite (free or Pro) is available.
 	 *
 	 * @return bool
 	 */

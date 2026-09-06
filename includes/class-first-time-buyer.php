@@ -2,20 +2,20 @@
 /**
  * Fire PixelYourSite FirstTimeBuyer with Purchase on a customer's first sale.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_First_Time_Buyer
+ * Class EventRelay_First_Time_Buyer
  */
-class PYS_Sublium_Bridge_First_Time_Buyer {
+class EventRelay_First_Time_Buyer {
 
 	/**
 	 * Order meta that marks FirstTimeBuyer as already sent by this bridge.
 	 */
-	const FIRED_META = '_pys_sublium_ftb_fired';
+	const FIRED_META = '_eventrelay_ftb_fired';
 
 	/**
 	 * Instance.
@@ -55,11 +55,11 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 	 * @return void
 	 */
 	public function maybe_send( $order_id, $old_status, $new_status, $order ) {
-		if ( ! PYS_Sublium_Bridge_Plugin::get_setting( 'send_first_time_buyer' ) ) {
+		if ( ! EventRelay_Plugin::get_setting( 'send_first_time_buyer' ) ) {
 			return;
 		}
 
-		if ( ! PYS_Sublium_Bridge_Plugin::is_pys_active() || ! $order instanceof WC_Order ) {
+		if ( ! EventRelay_Plugin::is_pys_active() || ! $order instanceof WC_Order ) {
 			return;
 		}
 
@@ -67,7 +67,7 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 			return;
 		}
 
-		$detector = PYS_Sublium_Bridge_Detector::instance();
+		$detector = EventRelay_Detector::instance();
 
 		if ( $detector->should_skip_purchase( $order ) ) {
 			return;
@@ -104,7 +104,7 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 		}
 
 		if ( ! $event ) {
-			PYS_Sublium_Bridge_Logger::instance()->log(
+			EventRelay_Logger::instance()->log(
 				'skipped',
 				array(
 					'order_id'   => $order_id,
@@ -113,7 +113,7 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 					'first_time' => true,
 					'message'    => sprintf(
 						/* translators: %d: order ID */
-						__( 'Order #%d is a first sale, but PixelYourSite did not build a FirstTimeBuyer event. Turn on FirstTimeBuyer under PixelYourSite → WooCommerce Events.', 'pys-sublium-bridge' ),
+						__( 'Order #%d is a first sale, but PixelYourSite did not build a FirstTimeBuyer event. Turn on FirstTimeBuyer under PixelYourSite → WooCommerce Events.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 						$order_id
 					),
 				)
@@ -126,9 +126,9 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 		$order->update_meta_data( self::FIRED_META, wp_json_encode( $sent ) );
 		$order->save();
 
-		$platforms = empty( $sent ) ? __( 'no platforms accepted it', 'pys-sublium-bridge' ) : implode( ', ', $sent );
+		$platforms = empty( $sent ) ? __( 'no platforms accepted it', 'eventrelay-for-pixelyoursite-and-sublium' ) : implode( ', ', $sent );
 
-		PYS_Sublium_Bridge_Logger::instance()->log(
+		EventRelay_Logger::instance()->log(
 			empty( $sent ) ? 'skipped' : 'sent',
 			array(
 				'order_id'   => $order_id,
@@ -138,7 +138,7 @@ class PYS_Sublium_Bridge_First_Time_Buyer {
 				'first_time' => true,
 				'message'    => sprintf(
 					/* translators: 1: order ID, 2: platform list */
-					__( 'Order #%1$d is a first-time sale. FirstTimeBuyer sent with Purchase via API to: %2$s.', 'pys-sublium-bridge' ),
+					__( 'Order #%1$d is a first-time sale. FirstTimeBuyer sent with Purchase via API to: %2$s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 					$order_id,
 					$platforms
 				),

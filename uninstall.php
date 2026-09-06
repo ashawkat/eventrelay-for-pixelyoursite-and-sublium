@@ -2,10 +2,10 @@
 /**
  * Uninstall cleanup.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-delete_option( 'pys_sublium_bridge' );
-delete_option( 'pys_sublium_bridge_log' );
+delete_option( 'eventrelay' );
+delete_option( 'eventrelay_log' );

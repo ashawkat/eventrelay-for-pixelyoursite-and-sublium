@@ -2,15 +2,15 @@
 /**
  * Detect Sublium renewal orders and classify automatic vs manual.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_Detector
+ * Class EventRelay_Detector
  */
-class PYS_Sublium_Bridge_Detector {
+class EventRelay_Detector {
 
 	/**
 	 * Instance.
@@ -63,14 +63,14 @@ class PYS_Sublium_Bridge_Detector {
 
 		$order->update_meta_data( '_sublium_wcs_subscription_renewal', 'yes' );
 		$order->update_meta_data( '_sublium_subscription_renewal', 'yes' );
-		$order->update_meta_data( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, 'automatic' );
+		$order->update_meta_data( EventRelay_Plugin::RENEWAL_TYPE_META, 'automatic' );
 		$order->save();
 
 		$this->log_blocked_renewal(
 			$order,
 			sprintf(
 				/* translators: %d: order ID */
-				__( 'Sublium processed an automatic renewal for order #%d. Purchase will be blocked.', 'pys-sublium-bridge' ),
+				__( 'Sublium processed an automatic renewal for order #%d. Purchase will be blocked.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$order->get_id()
 			)
 		);
@@ -103,7 +103,7 @@ class PYS_Sublium_Bridge_Detector {
 			$order,
 			sprintf(
 				/* translators: %d: order ID */
-				__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'pys-sublium-bridge' ),
+				__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$order->get_id()
 			)
 		);
@@ -122,7 +122,7 @@ class PYS_Sublium_Bridge_Detector {
 			return false;
 		}
 
-		return (bool) apply_filters( 'pys_sublium_bridge_is_renewal', $this->detect_renewal( $order ), $order );
+		return (bool) apply_filters( 'eventrelay_is_renewal', $this->detect_renewal( $order ), $order );
 	}
 
 	/**
@@ -140,7 +140,7 @@ class PYS_Sublium_Bridge_Detector {
 
 		$type = $this->detect_renewal_type( $order );
 
-		return apply_filters( 'pys_sublium_bridge_renewal_type', $type, $order );
+		return apply_filters( 'eventrelay_renewal_type', $type, $order );
 	}
 
 	/**
@@ -159,10 +159,10 @@ class PYS_Sublium_Bridge_Detector {
 		$type = $this->get_renewal_type( $order );
 
 		if ( 'manual' === $type ) {
-			return (bool) PYS_Sublium_Bridge_Plugin::get_setting( 'exclude_manual_renewals' );
+			return (bool) EventRelay_Plugin::get_setting( 'exclude_manual_renewals' );
 		}
 
-		return (bool) PYS_Sublium_Bridge_Plugin::get_setting( 'exclude_auto_renewals' );
+		return (bool) EventRelay_Plugin::get_setting( 'exclude_auto_renewals' );
 	}
 
 	/**
@@ -291,7 +291,7 @@ class PYS_Sublium_Bridge_Detector {
 			}
 		}
 
-		if ( $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true ) ) {
+		if ( $order->get_meta( EventRelay_Plugin::RENEWAL_TYPE_META, true ) ) {
 			return true;
 		}
 
@@ -334,7 +334,7 @@ class PYS_Sublium_Bridge_Detector {
 	 * @return string
 	 */
 	private function detect_renewal_type( $order ) {
-		$stored = $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true );
+		$stored = $order->get_meta( EventRelay_Plugin::RENEWAL_TYPE_META, true );
 		if ( in_array( $stored, array( 'manual', 'automatic' ), true ) ) {
 			return $stored;
 		}
@@ -574,7 +574,7 @@ class PYS_Sublium_Bridge_Detector {
 			return;
 		}
 
-		$logger = PYS_Sublium_Bridge_Logger::instance();
+		$logger = EventRelay_Logger::instance();
 		if ( $logger->has_action_for_order( $order->get_id(), 'blocked' ) ) {
 			return;
 		}
@@ -623,7 +623,7 @@ class PYS_Sublium_Bridge_Detector {
 				$order,
 				sprintf(
 					/* translators: %d: order ID */
-					__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'pys-sublium-bridge' ),
+					__( 'Order #%d is a subscription renewal. Purchase was blocked so it was not sent as a new sale.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 					$order->get_id()
 				)
 			);
@@ -643,7 +643,7 @@ class PYS_Sublium_Bridge_Detector {
 			return array(
 				'found'       => false,
 				'order_id'    => 0,
-				'headline'    => __( 'That order was not found.', 'pys-sublium-bridge' ),
+				'headline'    => __( 'That order was not found.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				'detail'      => '',
 				'would_block' => false,
 				'status'      => 'missing',
@@ -666,20 +666,20 @@ class PYS_Sublium_Bridge_Detector {
 		}
 
 		if ( $is_parent ) {
-			$headline = __( 'This is the original checkout that created the subscription.', 'pys-sublium-bridge' );
-			$detail   = __( 'Purchase should be sent. A later Sublium charge creates a different order, and that one is the renewal to block.', 'pys-sublium-bridge' );
+			$headline = __( 'This is the original checkout that created the subscription.', 'eventrelay-for-pixelyoursite-and-sublium' );
+			$detail   = __( 'Purchase should be sent. A later Sublium charge creates a different order, and that one is the renewal to block.', 'eventrelay-for-pixelyoursite-and-sublium' );
 			$status   = 'parent';
 		} elseif ( $would_block ) {
-			$headline = __( 'This is a Sublium renewal. Purchase will be blocked.', 'pys-sublium-bridge' );
-			$detail   = __( 'If PixelYourSite tries to send Purchase for this order, the activity log will show Renewal blocked.', 'pys-sublium-bridge' );
+			$headline = __( 'This is a Sublium renewal. Purchase will be blocked.', 'eventrelay-for-pixelyoursite-and-sublium' );
+			$detail   = __( 'If PixelYourSite tries to send Purchase for this order, the activity log will show Renewal blocked.', 'eventrelay-for-pixelyoursite-and-sublium' );
 			$status   = 'blocked';
 		} elseif ( $is_renewal ) {
-			$headline = __( 'This is a Sublium renewal, but blocking is turned off for this type.', 'pys-sublium-bridge' );
-			$detail   = __( 'Turn on Block automatic renewals or Block manual / early renewals, then Purchase will be kept out of ad data.', 'pys-sublium-bridge' );
+			$headline = __( 'This is a Sublium renewal, but blocking is turned off for this type.', 'eventrelay-for-pixelyoursite-and-sublium' );
+			$detail   = __( 'Turn on Block automatic renewals or Block manual / early renewals, then Purchase will be kept out of ad data.', 'eventrelay-for-pixelyoursite-and-sublium' );
 			$status   = 'renewal-open';
 		} else {
-			$headline = __( 'This is not detected as a Sublium renewal.', 'pys-sublium-bridge' );
-			$detail   = __( 'Purchase will be sent. If you expected a block, this is likely the first subscription checkout, or Sublium has not marked the order as a renewal.', 'pys-sublium-bridge' );
+			$headline = __( 'This is not detected as a Sublium renewal.', 'eventrelay-for-pixelyoursite-and-sublium' );
+			$detail   = __( 'Purchase will be sent. If you expected a block, this is likely the first subscription checkout, or Sublium has not marked the order as a renewal.', 'eventrelay-for-pixelyoursite-and-sublium' );
 			$status   = 'allowed';
 		}
 
@@ -689,17 +689,17 @@ class PYS_Sublium_Bridge_Detector {
 		}
 
 		$facts = array(
-			__( 'Order', 'pys-sublium-bridge' )                    => '#' . $order->get_id(),
-			__( 'Created via', 'pys-sublium-bridge' )              => $order->get_created_via() ? $order->get_created_via() : '—',
-			__( 'Sublium renewal flag', 'pys-sublium-bridge' )     => $sublium_renewal ? $sublium_renewal : '—',
-			__( 'Sublium payoff', 'pys-sublium-bridge' )           => $this->meta_is_yes( $order, '_sublium_wcs_subscription_payoff' ) || $this->meta_is_yes( $order, '_sublium_subscription_payoff' ) ? __( 'yes', 'pys-sublium-bridge' ) : '—',
-			__( 'WooCommerce renewal', 'pys-sublium-bridge' )      => $order->get_meta( '_subscription_renewal', true ) ? '#' . $order->get_meta( '_subscription_renewal', true ) : '—',
-			__( 'Bridge stamp', 'pys-sublium-bridge' )             => $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true ) ? $order->get_meta( PYS_Sublium_Bridge_Plugin::RENEWAL_TYPE_META, true ) : '—',
-			__( 'Parent checkout meta', 'pys-sublium-bridge' )     => $is_parent ? __( 'yes', 'pys-sublium-bridge' ) : '—',
-			__( 'Linked subscription', 'pys-sublium-bridge' )      => $sub_ids ? implode( ', ', array_map( 'strval', $sub_ids ) ) : '—',
-			__( 'Subscription parent order', 'pys-sublium-bridge' ) => $parent_id ? '#' . $parent_id : '—',
-			__( 'Renewal type', 'pys-sublium-bridge' )             => $type ? $type : '—',
-			__( 'PixelYourSite Purchase fired', 'pys-sublium-bridge' ) => $order->get_meta( '_pys_purchase_event_fired', true ) ? __( 'yes — this would mean a leak', 'pys-sublium-bridge' ) : __( 'no', 'pys-sublium-bridge' ),
+			__( 'Order', 'eventrelay-for-pixelyoursite-and-sublium' )                    => '#' . $order->get_id(),
+			__( 'Created via', 'eventrelay-for-pixelyoursite-and-sublium' )              => $order->get_created_via() ? $order->get_created_via() : '—',
+			__( 'Sublium renewal flag', 'eventrelay-for-pixelyoursite-and-sublium' )     => $sublium_renewal ? $sublium_renewal : '—',
+			__( 'Sublium payoff', 'eventrelay-for-pixelyoursite-and-sublium' )           => $this->meta_is_yes( $order, '_sublium_wcs_subscription_payoff' ) || $this->meta_is_yes( $order, '_sublium_subscription_payoff' ) ? __( 'yes', 'eventrelay-for-pixelyoursite-and-sublium' ) : '—',
+			__( 'WooCommerce renewal', 'eventrelay-for-pixelyoursite-and-sublium' )      => $order->get_meta( '_subscription_renewal', true ) ? '#' . $order->get_meta( '_subscription_renewal', true ) : '—',
+			__( 'Bridge stamp', 'eventrelay-for-pixelyoursite-and-sublium' )             => $order->get_meta( EventRelay_Plugin::RENEWAL_TYPE_META, true ) ? $order->get_meta( EventRelay_Plugin::RENEWAL_TYPE_META, true ) : '—',
+			__( 'Parent checkout meta', 'eventrelay-for-pixelyoursite-and-sublium' )     => $is_parent ? __( 'yes', 'eventrelay-for-pixelyoursite-and-sublium' ) : '—',
+			__( 'Linked subscription', 'eventrelay-for-pixelyoursite-and-sublium' )      => $sub_ids ? implode( ', ', array_map( 'strval', $sub_ids ) ) : '—',
+			__( 'Subscription parent order', 'eventrelay-for-pixelyoursite-and-sublium' ) => $parent_id ? '#' . $parent_id : '—',
+			__( 'Renewal type', 'eventrelay-for-pixelyoursite-and-sublium' )             => $type ? $type : '—',
+			__( 'PixelYourSite Purchase fired', 'eventrelay-for-pixelyoursite-and-sublium' ) => $order->get_meta( '_pys_purchase_event_fired', true ) ? __( 'yes — this would mean a leak', 'eventrelay-for-pixelyoursite-and-sublium' ) : __( 'no', 'eventrelay-for-pixelyoursite-and-sublium' ),
 		);
 
 		return array(
@@ -727,8 +727,8 @@ class PYS_Sublium_Bridge_Detector {
 
 		foreach ( array_unique( array_filter( $screens ) ) as $screen ) {
 			add_meta_box(
-				'pys-sublium-bridge-order',
-				__( 'PYS Sublium Bridge', 'pys-sublium-bridge' ),
+				'eventrelay-order',
+				__( 'EventRelay', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				array( $this, 'render_order_metabox' ),
 				$screen,
 				'side',

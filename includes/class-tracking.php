@@ -2,15 +2,15 @@
 /**
  * Block PixelYourSite Purchase events for excluded Sublium renewals.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_Tracking
+ * Class EventRelay_Tracking
  */
-class PYS_Sublium_Bridge_Tracking {
+class EventRelay_Tracking {
 
 	/**
 	 * Purchase-like event slugs PixelYourSite may fire for an order.
@@ -73,7 +73,7 @@ class PYS_Sublium_Bridge_Tracking {
 			return $is_active;
 		}
 
-		if ( PYS_Sublium_Bridge_Detector::instance()->should_skip_purchase( $order_id ) ) {
+		if ( EventRelay_Detector::instance()->should_skip_purchase( $order_id ) ) {
 			$this->log_decision( 'blocked', $order_id, 'Purchase', 'browser', is_object( $pixel ) && method_exists( $pixel, 'getSlug' ) ? $pixel->getSlug() : '' );
 			return false;
 		}
@@ -97,7 +97,7 @@ class PYS_Sublium_Bridge_Tracking {
 			return $disable;
 		}
 
-		if ( PYS_Sublium_Bridge_Detector::instance()->should_skip_purchase( $order_id ) ) {
+		if ( EventRelay_Detector::instance()->should_skip_purchase( $order_id ) ) {
 			$this->log_decision( 'blocked', $order_id, 'Purchase', 'server', $tag_slug );
 			return true;
 		}
@@ -143,25 +143,25 @@ class PYS_Sublium_Bridge_Tracking {
 	 * @return void
 	 */
 	private function log_decision( $action, $order_id, $event, $channel, $platform ) {
-		$detector    = PYS_Sublium_Bridge_Detector::instance();
+		$detector    = EventRelay_Detector::instance();
 		$is_renewal  = $detector->is_renewal( $order_id );
 		$type        = $is_renewal ? $detector->get_renewal_type( $order_id ) : '';
 		$first_time  = $detector->is_first_time_sale( $order_id );
-		$platform    = $platform ? $platform : __( 'connected pixels', 'pys-sublium-bridge' );
+		$platform    = $platform ? $platform : __( 'connected pixels', 'eventrelay-for-pixelyoursite-and-sublium' );
 
 		if ( 'blocked' === $action ) {
 			$message = sprintf(
 				/* translators: 1: order ID, 2: renewal type, 3: channel, 4: platform */
-				__( 'Order #%1$d is a %2$s Sublium renewal. Purchase was blocked on %3$s so it was not sent to %4$s.', 'pys-sublium-bridge' ),
+				__( 'Order #%1$d is a %2$s Sublium renewal. Purchase was blocked on %3$s so it was not sent to %4$s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$order_id,
-				$type ? $type : __( 'subscription', 'pys-sublium-bridge' ),
+				$type ? $type : __( 'subscription', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$channel,
 				$platform
 			);
 		} elseif ( $first_time ) {
 			$message = sprintf(
 				/* translators: 1: order ID, 2: channel, 3: platform */
-				__( 'Order #%1$d is a first-time sale. Purchase was allowed on %2$s and sent to %3$s.', 'pys-sublium-bridge' ),
+				__( 'Order #%1$d is a first-time sale. Purchase was allowed on %2$s and sent to %3$s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$order_id,
 				$channel,
 				$platform
@@ -169,14 +169,14 @@ class PYS_Sublium_Bridge_Tracking {
 		} else {
 			$message = sprintf(
 				/* translators: 1: order ID, 2: channel, 3: platform */
-				__( 'Order #%1$d is not a renewal. Purchase was allowed on %2$s and sent to %3$s.', 'pys-sublium-bridge' ),
+				__( 'Order #%1$d is not a renewal. Purchase was allowed on %2$s and sent to %3$s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
 				$order_id,
 				$channel,
 				$platform
 			);
 		}
 
-		PYS_Sublium_Bridge_Logger::instance()->log(
+		EventRelay_Logger::instance()->log(
 			$action,
 			array(
 				'order_id'     => $order_id,

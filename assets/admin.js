@@ -22,25 +22,25 @@
 			return;
 		}
 
-		if (document.querySelector('.pys-sublium-bridge-note')) {
+		if (document.querySelector('.eventrelay-note')) {
 			return;
 		}
 
 		var note = document.createElement('p');
-		note.className = 'text-gray pys-sublium-bridge-note';
+		note.className = 'text-gray eventrelay-note';
 		note.textContent = window.pysSubliumBridge.notice;
 		anchor.parentNode.insertBefore(note, anchor.nextSibling);
 	}
 
 	function markFormUnlocked(input) {
 		var form = input.closest('form');
-		if (!form || form.querySelector('input[name="pys_sublium_bridge_ui"]')) {
+		if (!form || form.querySelector('input[name="eventrelay_ui"]')) {
 			return;
 		}
 
 		var hidden = document.createElement('input');
 		hidden.type = 'hidden';
-		hidden.name = 'pys_sublium_bridge_ui';
+		hidden.name = 'eventrelay_ui';
 		hidden.value = '1';
 		form.appendChild(hidden);
 	}

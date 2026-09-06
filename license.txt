@@ -1,4 +1,4 @@
-PYS Sublium Bridge
+EventRelay – Bridge for PixelYourSite and Sublium
 Copyright (C) 2026 Betatech
 
 This program is free software: you can redistribute it and/or modify

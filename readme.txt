@@ -1,23 +1,23 @@
-=== PYS Sublium Bridge ===
+=== EventRelay – Bridge for PixelYourSite and Sublium ===
 Contributors: betatech, adnanshawkat
-Tags: woocommerce, subscriptions, tracking, facebook, analytics
+Tags: woocommerce, subscriptions, tracking, analytics, pixelyoursite
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Requires Plugins: woocommerce, pixelyoursite-pro, sublium-subscriptions-for-woocommerce
-Stable tag: 1.2.3
+Requires Plugins: woocommerce, pixelyoursite, sublium-subscriptions-for-woocommerce
+Stable tag: 1.2.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked.
+Third-party bridge by Betatech. Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked.
 
 == Description ==
 
-PixelYourSite Pro only enables “Exclude renewals from the Purchase event” when official WooCommerce Subscriptions is installed. Stores that use Sublium Subscriptions cannot turn those checkboxes on, so every automatic renewal is sent to Meta, Google, TikTok, and other connected pixels as a new Purchase.
+This is an independent plugin by Betatech. It is not affiliated with, endorsed by, or an official product of PixelYourSite or Sublium.
 
-This plugin is a small bridge. It does not fork PixelYourSite. It detects Sublium renewals and blocks those Purchase events using PixelYourSite’s own filters and APIs.
+PixelYourSite Pro only enables “Exclude renewals from the Purchase event” when official WooCommerce Subscriptions is installed. Stores that use Sublium Subscriptions cannot turn those checkboxes on, so every automatic renewal is sent to connected pixels as a new Purchase.
 
-This is a third-party integration. It is not affiliated with, endorsed by, or an official product of PixelYourSite or Sublium.
+This plugin is a small third-party bridge. It does not fork PixelYourSite. It detects Sublium renewals and blocks those Purchase events using PixelYourSite’s own filters and APIs.
 
 = What it does =
 
@@ -35,30 +35,36 @@ This is a third-party integration. It is not affiliated with, endorsed by, or an
 
 = Requirements =
 
-These are also declared in the plugin header (`Requires Plugins`) so WordPress will not activate this plugin unless they are installed:
+WordPress will not activate this plugin unless these directory plugins are installed (`Requires Plugins`):
 
 * WordPress 6.0 or later
 * PHP 7.4 or later
 * WooCommerce 7.0 or later
-* PixelYourSite Pro (`pixelyoursite-pro`)
+* PixelYourSite (`pixelyoursite`)
 * Sublium Subscriptions (`sublium-subscriptions-for-woocommerce`)
+
+PixelYourSite Pro and Sublium Pro also satisfy those dependencies. The plugin maps the free directory slugs to the Pro folders when the free plugin is not installed.
 
 == Installation ==
 
-1. Upload the `pys-sublium-bridge` folder to `/wp-content/plugins/`
-2. Activate **PYS Sublium Bridge** through the Plugins screen
-3. Open **PYS Bridge** in the WordPress admin menu
-4. Confirm PixelYourSite Pro and Sublium Subscriptions are active
+1. Upload the `eventrelay-for-pixelyoursite-and-sublium` folder to `/wp-content/plugins/`
+2. Activate **EventRelay – Bridge for PixelYourSite and Sublium** through the Plugins screen
+3. Open **EventRelay** in the WordPress admin menu
+4. Confirm PixelYourSite (free or Pro) and Sublium Subscriptions (free or Pro) are active
 
 == Frequently Asked Questions ==
 
+= Is this an official PixelYourSite or Sublium plugin? =
+
+No. It is a third-party integration developed and owned by Betatech. It is not affiliated with PixelYourSite or Sublium.
+
 = Does this replace PixelYourSite? =
 
-No. It only bridges PixelYourSite Pro to Sublium Subscriptions so renewal exclusion and FirstTimeBuyer work.
+No. It only bridges PixelYourSite to Sublium Subscriptions so renewal exclusion and FirstTimeBuyer work.
 
 = Which plugins must be installed? =
 
-WooCommerce, PixelYourSite Pro, and Sublium Subscriptions. WordPress reads these from the `Requires Plugins` header. If any of them is missing, this plugin will not activate.
+WooCommerce, PixelYourSite, and Sublium Subscriptions. These are declared in `Requires Plugins` using their WordPress.org slugs (`woocommerce`, `pixelyoursite`, `sublium-subscriptions-for-woocommerce`). The Pro versions of PixelYourSite and Sublium also count.
 
 = Do I need official WooCommerce Subscriptions? =
 
@@ -70,9 +76,14 @@ No. The first order that creates the subscription is never treated as a renewal.
 
 = Where is the activity log? =
 
-Open **PYS Bridge** in the admin menu. The last 150 decisions are also written to WooCommerce → Status → Logs (`pys-sublium-bridge`).
+Open **EventRelay** in the admin menu. The last 150 decisions are also written to WooCommerce → Status → Logs (`eventrelay`).
 
 == Changelog ==
+
+= 1.2.4 =
+* Rename to EventRelay – Bridge for PixelYourSite and Sublium to make third-party ownership clear
+* Use WordPress.org slugs in Requires Plugins: woocommerce, pixelyoursite, sublium-subscriptions-for-woocommerce
+* Add capability checks on settings save and PixelYourSite setting sync
 
 = 1.2.3 =
 * Detect Sublium renewals using `_sublium_wcs_subscription_renewal` and Sublium's own `sublium_order_contains_renewal()` helper

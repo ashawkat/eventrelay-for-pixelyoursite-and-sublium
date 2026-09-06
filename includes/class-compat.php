@@ -6,15 +6,15 @@
  * so its native "exclude renewals" check never runs. These shims map that API onto Sublium.
  * When WCS is present, we only filter its results so Sublium renewals are included.
  *
- * @package PYS_Sublium_Bridge
+ * @package EventRelay
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PYS_Sublium_Bridge_Compat
+ * Class EventRelay_Compat
  */
-class PYS_Sublium_Bridge_Compat {
+class EventRelay_Compat {
 
 	/**
 	 * Instance.
@@ -58,7 +58,7 @@ class PYS_Sublium_Bridge_Compat {
 			return true;
 		}
 
-		return PYS_Sublium_Bridge_Detector::instance()->is_renewal( $order );
+		return EventRelay_Detector::instance()->is_renewal( $order );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class PYS_Sublium_Bridge_Compat {
 			return true;
 		}
 
-		$detector = PYS_Sublium_Bridge_Detector::instance();
+		$detector = EventRelay_Detector::instance();
 
 		return $detector->is_renewal( $order ) && 'manual' === $detector->get_renewal_type( $order );
 	}
@@ -95,7 +95,7 @@ class PYS_Sublium_Bridge_Compat {
 			 * @return bool
 			 */
 			function wcs_order_contains_renewal( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-				$is_renewal = PYS_Sublium_Bridge_Detector::instance()->is_renewal( $order );
+				$is_renewal = EventRelay_Detector::instance()->is_renewal( $order );
 
 				/**
 				 * Filter whether an order is a subscription renewal.
@@ -117,7 +117,7 @@ class PYS_Sublium_Bridge_Compat {
 			 * @return bool
 			 */
 			function wcs_order_contains_early_renewal( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-				$detector = PYS_Sublium_Bridge_Detector::instance();
+				$detector = EventRelay_Detector::instance();
 				$is_early = $detector->is_renewal( $order ) && 'manual' === $detector->get_renewal_type( $order );
 
 				/**
@@ -142,7 +142,7 @@ class PYS_Sublium_Bridge_Compat {
 			 * @return array<int,object>
 			 */
 			function wcs_get_subscriptions_for_renewal_order( $order ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-				$detector = PYS_Sublium_Bridge_Detector::instance();
+				$detector = EventRelay_Detector::instance();
 				$order    = $order instanceof WC_Order ? $order : ( function_exists( 'wc_get_order' ) ? wc_get_order( $order ) : null );
 
 				if ( ! $order instanceof WC_Order ) {
@@ -154,7 +154,7 @@ class PYS_Sublium_Bridge_Compat {
 				foreach ( $detector->get_subscription_ids( $order ) as $subscription_id ) {
 					$subscription = $detector->get_subscription( $subscription_id );
 					if ( $subscription ) {
-						$subscriptions[ $subscription_id ] = new PYS_Sublium_Bridge_Subscription_Adapter( $subscription );
+						$subscriptions[ $subscription_id ] = new EventRelay_Subscription_Adapter( $subscription );
 					}
 				}
 
@@ -167,7 +167,7 @@ class PYS_Sublium_Bridge_Compat {
 /**
  * Minimal adapter so PixelYourSite can call is_manual() on Sublium subscriptions.
  */
-class PYS_Sublium_Bridge_Subscription_Adapter {
+class EventRelay_Subscription_Adapter {
 
 	/**
 	 * Underlying Sublium subscription.
