@@ -47,67 +47,21 @@ final class EventRelay_Plugin {
 	 */
 	private function __construct() {
 		register_activation_hook( EVENTRELAY_FILE, array( $this, 'activate' ) );
-
-		add_filter( 'wp_plugin_dependencies_slug', array( $this, 'map_dependency_slug' ) );
 		add_action( 'plugins_loaded', array( $this, 'init' ), 20 );
 		add_filter( 'plugin_action_links_' . EVENTRELAY_BASENAME, array( $this, 'add_settings_link' ) );
 	}
 
 	/**
-	 * Seed defaults on activation after required plugins are confirmed.
+	 * Seed defaults on activation.
 	 *
 	 * @return void
 	 */
 	public function activate() {
-		$missing = self::get_missing_installed_plugins();
-
-		if ( ! empty( $missing ) ) {
-			if ( function_exists( 'deactivate_plugins' ) ) {
-				deactivate_plugins( EVENTRELAY_BASENAME );
-			}
-
-			$message = sprintf(
-				/* translators: %s: comma-separated plugin names */
-				__( 'EventRelay – Bridge for PixelYourSite and Sublium requires these plugins to be installed: %s.', 'eventrelay-for-pixelyoursite-and-sublium' ),
-				implode( ', ', $missing )
-			);
-
-			wp_die( esc_html( $message ), esc_html__( 'Plugin dependency check failed', 'eventrelay-for-pixelyoursite-and-sublium' ), array( 'back_link' => true ) );
-		}
-
 		$current = get_option( self::OPTION_KEY, null );
 
 		if ( ! is_array( $current ) ) {
 			add_option( self::OPTION_KEY, self::default_settings() );
 		}
-	}
-
-	/**
-	 * Map directory slugs onto installed premium folders when the free slug is absent.
-	 *
-	 * @param string $slug Dependency slug from Requires Plugins.
-	 * @return string
-	 */
-	public function map_dependency_slug( $slug ) {
-		if ( 'pixelyoursite' === $slug && ! $this->plugin_directory_exists( $slug ) && $this->plugin_directory_exists( 'pixelyoursite-pro' ) ) {
-			return 'pixelyoursite-pro';
-		}
-
-		if ( 'sublium-subscriptions-for-woocommerce' === $slug && ! $this->plugin_directory_exists( $slug ) && $this->plugin_directory_exists( 'sublium-subscriptions-for-woocommerce-pro' ) ) {
-			return 'sublium-subscriptions-for-woocommerce-pro';
-		}
-
-		return $slug;
-	}
-
-	/**
-	 * Whether a plugin directory exists under wp-content/plugins.
-	 *
-	 * @param string $slug Plugin folder name.
-	 * @return bool
-	 */
-	private function plugin_directory_exists( $slug ) {
-		return is_dir( trailingslashit( WP_PLUGIN_DIR ) . $slug );
 	}
 
 	/**
@@ -208,56 +162,12 @@ final class EventRelay_Plugin {
 	}
 
 	/**
-	 * Required plugins that are not installed (used on activation).
-	 *
-	 * Runtime function checks can fail during activation because some
-	 * plugins boot on plugins_loaded, which has already run.
-	 *
-	 * @return array<int,string>
-	 */
-	public static function get_missing_installed_plugins() {
-		$missing = array();
-
-		if ( ! self::plugin_file_exists( 'woocommerce/woocommerce.php' ) && ! self::is_woocommerce_active() ) {
-			$missing[] = 'WooCommerce';
-		}
-
-		if ( ! self::plugin_file_exists( 'pixelyoursite/pixelyoursite.php' )
-			&& ! self::plugin_file_exists( 'pixelyoursite-pro/pixelyoursite-pro.php' )
-			&& ! self::is_pys_active() ) {
-			$missing[] = 'PixelYourSite';
-		}
-
-		if ( ! self::plugin_file_exists( 'sublium-subscriptions-for-woocommerce/sublium-subscriptions-for-woocommerce.php' )
-			&& ! self::plugin_file_exists( 'sublium-subscriptions-for-woocommerce-pro/sublium-subscriptions-for-woocommerce-pro.php' )
-			&& ! self::is_sublium_active() ) {
-			$missing[] = 'Sublium Subscriptions';
-		}
-
-		return $missing;
-	}
-
-	/**
-	 * Whether a plugin main file exists in wp-content/plugins.
-	 *
-	 * @param string $plugin_file Plugin basename, e.g. woocommerce/woocommerce.php.
-	 * @return bool
-	 */
-	public static function plugin_file_exists( $plugin_file ) {
-		return file_exists( trailingslashit( WP_PLUGIN_DIR ) . ltrim( $plugin_file, '/' ) );
-	}
-
-	/**
 	 * Required plugins that are not currently available.
 	 *
 	 * @return array<int,string>
 	 */
 	public static function get_missing_required_plugins() {
 		$missing = array();
-
-		if ( ! self::is_woocommerce_active() ) {
-			$missing[] = 'WooCommerce';
-		}
 
 		if ( ! self::is_pys_active() ) {
 			$missing[] = 'PixelYourSite';

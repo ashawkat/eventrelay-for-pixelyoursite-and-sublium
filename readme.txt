@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, tracking, analytics, pixelyoursite
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Requires Plugins: woocommerce, pixelyoursite, sublium-subscriptions-for-woocommerce
+Requires Plugins: sublium-subscriptions-for-woocommerce
 Stable tag: 1.2.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -35,22 +35,22 @@ This plugin is a small third-party bridge. It does not fork PixelYourSite. It de
 
 = Requirements =
 
-WordPress will not activate this plugin unless these directory plugins are installed (`Requires Plugins`):
+WordPress will not activate this plugin unless Sublium Subscriptions (free) is installed (`Requires Plugins`):
 
 * WordPress 6.0 or later
 * PHP 7.4 or later
-* WooCommerce 7.0 or later
-* PixelYourSite (`pixelyoursite`)
 * Sublium Subscriptions (`sublium-subscriptions-for-woocommerce`)
+* PixelYourSite free or Pro (runtime; Pro is not in the WordPress.org directory)
+* WooCommerce 7.0 or later (needed at runtime because Sublium and PixelYourSite Woo events use it)
 
-PixelYourSite Pro and Sublium Pro also satisfy those dependencies. The plugin maps the free directory slugs to the Pro folders when the free plugin is not installed.
+Sublium Pro is an add-on and is not required. PixelYourSite Pro works without the free plugin.
 
 == Installation ==
 
 1. Upload the `eventrelay-for-pixelyoursite-and-sublium` folder to `/wp-content/plugins/`
 2. Activate **EventRelay – Bridge for PixelYourSite and Sublium** through the Plugins screen
 3. Open **EventRelay** in the WordPress admin menu
-4. Confirm PixelYourSite (free or Pro) and Sublium Subscriptions (free or Pro) are active
+4. Confirm PixelYourSite (free or Pro) and Sublium Subscriptions (free) are active
 
 == Frequently Asked Questions ==
 
@@ -64,7 +64,7 @@ No. It only bridges PixelYourSite to Sublium Subscriptions so renewal exclusion 
 
 = Which plugins must be installed? =
 
-WooCommerce, PixelYourSite, and Sublium Subscriptions. These are declared in `Requires Plugins` using their WordPress.org slugs (`woocommerce`, `pixelyoursite`, `sublium-subscriptions-for-woocommerce`). The Pro versions of PixelYourSite and Sublium also count.
+Sublium Subscriptions (free) is declared in `Requires Plugins` (`sublium-subscriptions-for-woocommerce`). PixelYourSite free or Pro must also be active; Pro is detected at runtime because it is not in the WordPress.org directory. WooCommerce is not a header dependency, but tracking stays off until WooCommerce is available.
 
 = Do I need official WooCommerce Subscriptions? =
 
@@ -82,7 +82,7 @@ Open **EventRelay** in the admin menu. The last 150 decisions are also written t
 
 = 1.2.4 =
 * Rename to EventRelay – Bridge for PixelYourSite and Sublium to make third-party ownership clear
-* Use WordPress.org slugs in Requires Plugins: woocommerce, pixelyoursite, sublium-subscriptions-for-woocommerce
+* Require only the Sublium free directory slug so WooCommerce and PixelYourSite Pro are not activation blockers
 * Add capability checks on settings save and PixelYourSite setting sync
 
 = 1.2.3 =

@@ -1,4 +1,7 @@
 .git
 .github
 .wordpress-org
+.DS_Store
+.distignore
 README.md
+*.zip

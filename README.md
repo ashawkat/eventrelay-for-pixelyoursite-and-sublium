@@ -2,17 +2,25 @@
 
 ![EventRelay – Bridge for PixelYourSite and Sublium](.wordpress-org/banner-1544x500.png)
 
-Independent WordPress plugin by [Betatech](https://betatech.co/) that connects [PixelYourSite Pro](https://www.pixelyoursite.com/) to [Sublium Subscriptions](https://sublium.com/). It stops subscription **renewals** from being sent as **Purchase** events, sends PixelYourSite’s **FirstTimeBuyer** event on a customer’s first sale, and shows every decision on an admin dashboard.
+**EventRelay** is an independent WordPress plugin by [Betatech](https://betatech.co/). It connects [PixelYourSite](https://www.pixelyoursite.com/) to [Sublium Subscriptions](https://sublium.com/), stops subscription **renewals** from being sent as **Purchase** events, sends PixelYourSite’s **FirstTimeBuyer** event on a customer’s first sale, and shows every decision on an admin dashboard.
 
 This is a third-party integration. It is not affiliated with, endorsed by, or an official product of PixelYourSite or Sublium.
+
+| | |
+|---|---|
+| Display name | EventRelay – Bridge for PixelYourSite and Sublium |
+| Directory slug | `eventrelay-for-pixelyoursite-and-sublium` |
+| Text domain | `eventrelay-for-pixelyoursite-and-sublium` |
+| Admin menu | EventRelay |
+| GitHub | [ashawkat/eventrelay-for-pixelyoursite-and-sublium](https://github.com/ashawkat/eventrelay-for-pixelyoursite-and-sublium) |
 
 The WordPress.org plugin directory uses `readme.txt`. This file is the GitHub overview.
 
 ## Why it exists
 
-PixelYourSite Pro only enables “Exclude renewals from the Purchase event” when official **WooCommerce Subscriptions** is installed. Stores that use **Sublium** cannot turn those checkboxes on, so every automatic renewal is sent to connected pixels as a new Purchase.
+PixelYourSite only enables “Exclude renewals from the Purchase event” when official **WooCommerce Subscriptions** is installed. Stores that use **Sublium** cannot turn those checkboxes on, so every automatic renewal is sent to connected pixels as a new Purchase.
 
-That inflates conversion data. This plugin is a small bridge: it does not fork PixelYourSite. It detects Sublium renewals and blocks those Purchase events, using PixelYourSite’s own filters and APIs.
+That inflates conversion data. EventRelay does not fork PixelYourSite. It detects Sublium renewals and blocks those Purchase events using PixelYourSite’s own filters and APIs.
 
 ## What it does
 
@@ -32,27 +40,25 @@ That inflates conversion data. This plugin is a small bridge: it does not fork P
 
 ## Requirements
 
-Declared in the plugin header and `readme.txt` as `Requires Plugins` (WordPress.org slugs only):
+`Requires Plugins` lists the WordPress.org slug for Sublium free only:
 
 - WordPress 6.0+
 - PHP 7.4+
-- WooCommerce 7.0+ (`woocommerce`)
-- PixelYourSite (`pixelyoursite`)
 - Sublium Subscriptions (`sublium-subscriptions-for-woocommerce`)
+- PixelYourSite free or Pro (runtime check; Pro is not in the directory)
+- WooCommerce 7.0+ (runtime; Sublium already depends on it)
 
-PixelYourSite Pro and Sublium Pro also satisfy those dependencies. The plugin maps the free directory slugs onto the Pro folders when the free plugin is not installed.
-
-WordPress will refuse to activate this plugin if those dependencies are not installed.
+Sublium Pro is an add-on and is not required. PixelYourSite Pro is detected without installing the free plugin.
 
 ## Install
 
-1. Copy this folder into `wp-content/plugins/` (directory slug: `eventrelay-for-pixelyoursite-and-sublium`).
+1. Copy the `eventrelay-for-pixelyoursite-and-sublium` folder into `wp-content/plugins/`.
 2. Activate **EventRelay – Bridge for PixelYourSite and Sublium**.
 3. Open **EventRelay** in the WordPress admin menu.
 
 ## Settings
 
-All of these live on the dashboard:
+All of these live on the EventRelay dashboard:
 
 - **Block automatic renewals** — scheduled Sublium charges do not fire Purchase
 - **Block manual / early renewals** — customer-initiated or manual renewals do not fire Purchase
@@ -78,7 +84,7 @@ An order is treated as a Sublium renewal when any of these are true:
 - `_sublium_wcs_subscription_payoff` is `yes` (installment payoff, treated like a renewal)
 - `created_via` is `sublium_subscription_renewal` or `sublium_subscription_payoff`
 - Official WooCommerce Subscriptions `_subscription_renewal` is set
-- The bridge stamped `_eventrelay_renewal_type` during `sublium_wcs_subscription_renewal_payment_complete`
+- EventRelay stamped `_eventrelay_renewal_type` during `sublium_wcs_subscription_renewal_payment_complete`
 
 The original checkout (`_sublium_wcs_parent_order`) is **never** treated as a renewal. Upgrades and resubscribes are new sales, not renewals.
 
@@ -110,14 +116,46 @@ assets/
   fonts/                  Google Sans (SIL Open Font License 1.1, self-hosted)
 ```
 
+PHP prefixes: `eventrelay`, `EventRelay`, `EVENTRELAY`. Text domain: `eventrelay-for-pixelyoursite-and-sublium`.
+
+## WordPress.org review notes
+
+These are the changes made for the directory review:
+
+- Renamed from PYS Sublium Bridge so the unique name is **EventRelay**, with PixelYourSite and Sublium only after **for**
+- Slug, text domain, main file, and folder are all `eventrelay-for-pixelyoursite-and-sublium`
+- `Requires Plugins` lists the Sublium free directory slug only: `sublium-subscriptions-for-woocommerce`
+- Settings save and PixelYourSite sync check capabilities as well as nonces
+- GitHub repo renamed to match the slug
+
 ## WordPress.org assets
 
-Icon and banner files live in `.wordpress-org/`. They are **not** part of the plugin zip. After the plugin is approved, upload them to the SVN `assets/` folder:
+Icon and banner files live in `.wordpress-org/`. They are **not** part of the plugin zip. After approval, upload them to the SVN `assets/` folder:
 
 - `icon-256x256.png` / `icon-128x128.png`
-- `banner-1544x500.png` / `banner-772x250.png`
+- `banner-1544x500.png` (1544×500)
+- `banner-772x250.png` (772×250)
 
-Banners must use the current display name and must not imply official PixelYourSite or Sublium affiliation.
+## Packaging for Plugin Check
+
+Do not zip the working folder as-is. Exclude VCS and GitHub-only files so Plugin Check does not fail on `.git` or hidden files.
+
+`.distignore` already excludes:
+
+- `.git`
+- `.github`
+- `.wordpress-org`
+- `README.md`
+
+From the parent `plugins` directory:
+
+```bash
+cd "/path/to/wp-content/plugins"
+zip -r eventrelay-for-pixelyoursite-and-sublium.zip eventrelay-for-pixelyoursite-and-sublium \
+  -x "*/.git/*" "*/.github/*" "*/.wordpress-org/*" "*/README.md" "*/.DS_Store" "*/.distignore"
+```
+
+Then run Plugin Check on that zip (or on the extracted folder) before uploading to WordPress.org.
 
 ## License
 
