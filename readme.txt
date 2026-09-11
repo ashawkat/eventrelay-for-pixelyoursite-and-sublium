@@ -78,6 +78,10 @@ No. The first order that creates the subscription is never treated as a renewal.
 
 Open **EventRelay** in the admin menu. The last 150 decisions are also written to WooCommerce → Status → Logs (`eventrelay`).
 
+== Screenshots ==
+
+1. The EventRelay tracking dashboard: purchases sent, renewals blocked, FirstTimeBuyer events, activity log grouped by order, and settings that control what is sent or blocked.
+
 == Changelog ==
 
 = 1.2.4 =
