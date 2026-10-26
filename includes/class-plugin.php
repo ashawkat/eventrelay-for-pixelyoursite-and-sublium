@@ -23,6 +23,16 @@ final class EventRelay_Plugin {
 	const RENEWAL_TYPE_META = '_eventrelay_renewal_type';
 
 	/**
+	 * Option key holding the recorded activation time.
+	 */
+	const INSTALL_TIME_OPTION = 'eventrelay_installed_at';
+
+	/**
+	 * Hook fired when a renewal Purchase is blocked — the plugin's core value.
+	 */
+	const SUCCESS_HOOK = 'eventrelay_renewal_blocked';
+
+	/**
 	 * Plugin instance.
 	 *
 	 * @var self|null
@@ -62,6 +72,10 @@ final class EventRelay_Plugin {
 		if ( ! is_array( $current ) ) {
 			add_option( self::OPTION_KEY, self::default_settings() );
 		}
+
+		if ( ! get_option( self::INSTALL_TIME_OPTION ) ) {
+			add_option( self::INSTALL_TIME_OPTION, time() );
+		}
 	}
 
 	/**
@@ -89,6 +103,8 @@ final class EventRelay_Plugin {
 			EventRelay_Admin::instance();
 		}
 
+		$this->boot_review_nudge();
+
 		if ( ! self::is_woocommerce_active() ) {
 			return;
 		}
@@ -107,6 +123,39 @@ final class EventRelay_Plugin {
 			EventRelay_Tracking::instance();
 			EventRelay_First_Time_Buyer::instance();
 		}
+	}
+
+	/**
+	 * Boot the vendored Betatech Review Nudge library.
+	 *
+	 * Runs before the WooCommerce check so the WordPress.org review ask is
+	 * not silenced while a dependency is missing. The success hook it
+	 * listens on (self::SUCCESS_HOOK) only fires once tracking is live.
+	 *
+	 * @return void
+	 */
+	private function boot_review_nudge() {
+		if ( ! get_option( self::INSTALL_TIME_OPTION ) ) {
+			add_option( self::INSTALL_TIME_OPTION, time() );
+		}
+
+		require_once EVENTRELAY_PATH . 'includes/lib/review-nudge/review-nudge.php';
+
+		new \Betatech\Review_Nudge(
+			array(
+				'slug'           => 'eventrelay-for-pixelyoursite-and-sublium',
+				'name'           => 'EventRelay',
+				'textdomain'     => 'eventrelay-for-pixelyoursite-and-sublium',
+				'icon'           => EVENTRELAY_URL . 'assets/icon-128x128.png',
+				'basename'       => EVENTRELAY_BASENAME,
+				'install_time'   => (int) get_option( self::INSTALL_TIME_OPTION ),
+				'delay_days'     => 7,
+				'later_days'     => 14,
+				'max_reminders'  => 2,
+				'success_hook'   => self::SUCCESS_HOOK,
+				'footer_screens' => array( 'toplevel_page_eventrelay' ),
+			)
+		);
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       EventRelay – Bridge for PixelYourSite and Sublium
  * Description:       Third-party plugin by Betatech. Exclude Sublium subscription renewals from PixelYourSite Purchase events and log what was sent or blocked. Not affiliated with PixelYourSite or Sublium.
- * Version:           1.2.4
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Requires Plugins:  sublium-subscriptions-for-woocommerce
@@ -28,7 +28,7 @@ add_action(
 	}
 );
 
-define( 'EVENTRELAY_VERSION', '1.2.4' );
+define( 'EVENTRELAY_VERSION', '1.3.0' );
 define( 'EVENTRELAY_FILE', __FILE__ );
 define( 'EVENTRELAY_PATH', plugin_dir_path( __FILE__ ) );
 define( 'EVENTRELAY_URL', plugin_dir_url( __FILE__ ) );

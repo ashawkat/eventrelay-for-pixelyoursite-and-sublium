@@ -189,5 +189,15 @@ class EventRelay_Tracking {
 				'message'      => $message,
 			)
 		);
+
+		if ( 'blocked' === $action ) {
+			/**
+			 * A renewal Purchase was blocked — the plugin delivered its core
+			 * value. The review nudge listens for this to become eligible.
+			 *
+			 * @param int|string $order_id Renewal order ID.
+			 */
+			do_action( EventRelay_Plugin::SUCCESS_HOOK, $order_id );
+		}
 	}
 }

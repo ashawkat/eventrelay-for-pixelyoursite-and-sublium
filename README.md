@@ -109,10 +109,12 @@ includes/
   class-logger.php
   class-admin.php
   views/dashboard.php
+  lib/review-nudge/        Betatech Review Nudge (vendored, wp.org review ask)
 assets/
   admin.css
   admin.js
   dashboard.js
+  icon-128x128.png
   fonts/                  Google Sans (SIL Open Font License 1.1, self-hosted)
 ```
 

@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: sublium-subscriptions-for-woocommerce
-Stable tag: 1.2.4
+Stable tag: 1.3.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,10 @@ Open **EventRelay** in the admin menu. The last 150 decisions are also written t
 1. The EventRelay tracking dashboard: purchases sent, renewals blocked, FirstTimeBuyer events, activity log grouped by order, and settings that control what is sent or blocked.
 
 == Changelog ==
+
+= 1.3.0 =
+* Ask for a WordPress.org review once the plugin has been useful: a dismissable notice appears 7 days after install or right after the first blocked renewal, with a quiet footer link on the EventRelay screen and a "Rate ★" action on the Plugins screen
+* "Maybe later" reschedules twice; "No thanks" stops the ask for good
 
 = 1.2.4 =
 * Rename to EventRelay – Bridge for PixelYourSite and Sublium to make third-party ownership clear
